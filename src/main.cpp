@@ -8,13 +8,14 @@ int main()
 }
 */
 
-
+#include "log.h"
 #include "build-info.h"
 
 #include "common/common.h"
 #include "llama.h"
-#include "log.h"
 
+#include <print.h>
+#include <iostream>
 #include <fstream>
 #include <sstream>
 #include <cmath>
@@ -32,15 +33,17 @@ std::string readFromFile(const std::string& filename) {
 }
 
 int main() {
+  log_disable();
   gpt_params params;
 
   std::string USERNAME = "John";
   std::string AINAME = "Pocket";
 
   params.model = "assets/Models/model.gguf";
-  params.n_ctx = 4096;
+  params.n_ctx = 2048;
   params.n_predict = 64;
-  params.n_batch = 64;
+  params.n_batch = 1024;
+  params.n_threads = 16;
   params.n_keep = -1;
   params.repeat_last_n = 256;
   params.repeat_penalty = 1.17647f;
@@ -51,7 +54,7 @@ int main() {
   params.antiprompt.push_back(std::format("{}:", USERNAME));
   params.interactive = false;
 
-  std::string prompt = readFromFile("assets/Prompts/short.txt");
+  std::string prompt = readFromFile("assets/Prompts/initial.txt");
   prompt = std::regex_replace(prompt, std::regex("\\$\\{USERNAME\\}"), USERNAME);
   prompt = std::regex_replace(prompt, std::regex("\\$\\{AINAME\\}"), AINAME);
   params.prompt = prompt;
@@ -65,13 +68,14 @@ int main() {
 
   if (model == NULL) {
     fprintf(stderr , "%s: error: unable to load model\n" , __func__);
-    return 1;
+    exit(1);
   }
 
   const int n_ctx_train = llama_n_ctx_train(ctx);
   if (params.n_ctx > n_ctx_train) {
     fprintf(stderr, "%s: warning: model was trained on only %d context tokens (%d specified)\n",
       __func__, n_ctx_train, params.n_ctx);
+    exit(1);
   }
 
   // print system information
@@ -96,23 +100,12 @@ int main() {
     return 1;
   }
 
-  {
-    fprintf(stderr, "prompt: \"%s\"\n", log_tostr(params.prompt));
-    fprintf(stderr, "tokens: %i\n", tokens_list.size());
-  }
-
   if (params.n_keep < 0 || params.n_keep > (int)tokens_list.size() || params.instruct) {
     params.n_keep = (int)tokens_list.size();
   }
 
   std::vector<llama_token> last_tokens(max_context_size);
   std::fill(last_tokens.begin(), last_tokens.end(), 0);
-
-
-  std::string path_session = params.path_prompt_cache;
-  std::vector<llama_token> session_tokens;
-
-  fprintf(stderr, "path_session: %s\n", log_tostr(path_session));
 
   std::vector<llama_token> embd;
   const int n_vocab = llama_n_vocab(ctx);
@@ -127,14 +120,13 @@ int main() {
 
   int n_remain = params.n_predict;
   int n_past = 0;
-  int n_session_consumed = 0;
   int n_consumed = 0;
   
   bool is_antiprompt = false;
   bool is_interacting = false;
   bool input_echo = true;
  
-  while (n_remain != 0 && !is_antiprompt) {
+  while (true) {
     // predict
     if (!embd.empty()) {
       int max_embd_size = max_context_size - 4;
@@ -170,29 +162,6 @@ int main() {
         embd.insert(embd.begin(), last_tokens.begin() + max_context_size - n_left/2 - embd.size(), last_tokens.end() - embd.size());
 
         fprintf(stderr, "embd: %s\n", LOG_TOKENS_TOSTR_PRETTY(ctx, embd));
-        path_session.clear();
-      }
-
-      // try to reuse a matching prefix from the loaded session instead of re-eval (via n_past)
-      if (n_session_consumed < (int) session_tokens.size()) {
-        size_t i = 0;
-        for ( ; i < embd.size(); i++) {
-          if (embd[i] != session_tokens[n_session_consumed]) {
-            session_tokens.resize(n_session_consumed);
-            break;
-          }
-
-          n_past++;
-          n_session_consumed++;
-
-          if (n_session_consumed >= (int) session_tokens.size()) {
-            ++i;
-            break;
-          }
-        }
-        if (i > 0) {
-          embd.erase(embd.begin(), embd.begin() + i);
-        }
       }
 
       // evaluate tokens in batches
@@ -202,21 +171,13 @@ int main() {
           n_eval = params.n_batch;
         }
 
-        fprintf(stderr, "eval: %s\n", LOG_TOKENS_TOSTR_PRETTY(ctx, embd));
-
+        /* fprintf(stderr, "parsing: [%d/%d]\n", i, embd.size()); */
         if (llama_eval(ctx, &embd[i], n_eval, n_past, params.n_threads)) {
           fprintf(stderr, "%s : failed to eval\n", __func__);
           exit(1);
         }
 
         n_past += n_eval;
-
-        fprintf(stderr, "n_past = %d\n", n_past);
-      }
-
-      if (!embd.empty() && !path_session.empty()) {
-        session_tokens.insert(session_tokens.end(), embd.begin(), embd.end());
-        n_session_consumed = session_tokens.size();
       }
     }
 
@@ -227,9 +188,6 @@ int main() {
 
       last_tokens.erase(last_tokens.begin());
       last_tokens.push_back(id);
-
-      /* fprintf(stderr, "last: %s\n", LOG_TOKENS_TOSTR_PRETTY(ctx, last_tokens)); */
-
       embd.push_back(id);
 
       // echo this to console
@@ -238,10 +196,10 @@ int main() {
       // decrement remaining sampling budget
       --n_remain;
 
-      fprintf(stderr, "n_remain: %d\n", n_remain);
+      /* fprintf(stderr, "n_remain: %d\n", n_remain); */
     } else {
       // some user input remains from prompt or interaction, forward it to processing
-      fprintf(stderr, "tokens_list.size(): %d, n_consumed: %d\n", (int) tokens_list.size(), n_consumed);
+      fprintf(stderr, "input: [%d/%d]\n", n_consumed, (int) tokens_list.size());
       while ((int) tokens_list.size() > n_consumed) {
         embd.push_back(tokens_list[n_consumed]);
         last_tokens.erase(last_tokens.begin());
@@ -257,16 +215,15 @@ int main() {
     if (input_echo) {
       for (auto id : embd) {
         const std::string token_str = llama_token_to_piece(ctx, id);
-        fprintf(stderr, "token_str: \"%s\"", token_str.c_str());
 
         if (embd.size() > 1) {
           input_tokens.push_back(id);
         } else {
           output_tokens.push_back(id);
           output_ss << token_str;
+          std::cout << "\r" << output_ss.str() << std::endl;
         }
       }
-      fflush(stdout);
     }
 
     // if not currently processing queued inputs;
@@ -319,8 +276,11 @@ int main() {
         }
       }
 
+      vprint(n_past);
+      vprint(is_interacting);
       if (n_past > 0 && is_interacting) {
         fprintf(stderr, "waiting for user input\n");
+        exit(1);
          
         if (params.input_prefix_bos) {
           fprintf(stderr, "adding input prefix BOS token\n");
