@@ -6,3 +6,6 @@ analysis.txt
 .clang-tidy
 compile_commands.json
 .cache
+/external/
+llama*
+assets/Models
