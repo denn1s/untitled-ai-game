@@ -8,6 +8,7 @@ class System {
     Scene* scene;
 
   public:
+    /* virtual ~System() = default; */
     void setScene(Scene* s) { scene = s; };
 };
 

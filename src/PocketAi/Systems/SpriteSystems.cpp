@@ -1,4 +1,4 @@
-#include "Systems.h"
+#include "SpriteSystems.h"
 
 #include <print.h>
 #include <constants.h>
@@ -8,9 +8,8 @@
 #include "ECS/Entity.h"
 #include "ECS/Components.h"
 #include "Game/Graphics/TextureManager.h"
-#include "TextProcessingQueue.h"
 
-#include "Components.h"
+#include "PocketAi/Components.h"
 
 UiSetupSystem::UiSetupSystem(SDL_Renderer* renderer)
     : renderer(renderer) { }
@@ -27,13 +26,6 @@ void UiRenderSystem::run(SDL_Renderer* renderer) {
         SCREEN_WIDTH * SCALE,
         SCREEN_HEIGHT * SCALE
     );
-}
-
-void CharacterSetupSystem::run() {
-    scene->player = new Entity(scene->r.create(), scene);
-    scene->player->addComponent<TransformComponent>(0, 24 * SCALE);  // ui offset
-    scene->player->addComponent<SpriteComponent>("Characters/main.png");
-    scene->player->addComponent<PlayerTextComponent>();
 }
 
 void BackgroundSetupSystem::run() {
@@ -126,59 +118,5 @@ void SpriteUpdateSystem::run(double dT) {
             }
         }
     }
-}
-
-void PlayerTextSetupSystem::run() {
-    short fontSize = 4 * SCALE;
-
-    TTF_Font* font = TTF_OpenFont("assets/Fonts/GamergirlClassic.ttf", fontSize);
-    if (!font) {
-        print("Failed to load font: %s\n", TTF_GetError());
-        exit(1);
-    }
-
-    auto& playerTextComponent = scene->player->get<PlayerTextComponent>();
-    playerTextComponent.font = font;
-    playerTextComponent.fontSize = fontSize;
-}
-
-void PlayerTextInputSystem::run(SDL_Event event) {
-    auto& playerTextComponent = scene->player->get<PlayerTextComponent>();
-
-    if (event.type == SDL_TEXTINPUT) {
-        playerTextComponent.text += event.text.text;
-    } else  if (event.type == SDL_KEYDOWN && !playerTextComponent.text.empty()) {
-        if (event.key.keysym.sym == SDLK_BACKSPACE) {
-            playerTextComponent.text.pop_back();
-        } else if (event.key.keysym.sym == SDLK_RETURN || event.key.keysym.sym == SDLK_KP_ENTER) {
-            requestQueue.push(playerTextComponent.text);
-            playerTextComponent.text.clear();
-        }
-    }
-}
-
-void PlayerTextRenderSystem::run(SDL_Renderer* renderer) {
-    auto& playerTextComponent = scene->player->get<PlayerTextComponent>();
-
-    if (playerTextComponent.text.empty()) {
-        return;  // text has 0 length
-    }
-playerTextComponent.text = "HELLO WORLD";
-    SDL_Color color = {226, 246, 228};
-    SDL_Rect position = {10 * SCALE, 100 * SCALE, 0, 0};
-
-    SDL_Surface* textSurface = TTF_RenderText_Solid(
-        playerTextComponent.font,
-        playerTextComponent.text.c_str(),
-        color
-    );
-
-    SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
-    position.w = textSurface->w;
-    position.h = textSurface->h;
-
-    SDL_FreeSurface(textSurface);
-    SDL_RenderCopy(renderer, textTexture, NULL, &position);
-    SDL_DestroyTexture(textTexture);
 }
 

@@ -1,5 +1,5 @@
 #pragma once
-
+#include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
 #include "ECS/Components.h"
@@ -10,6 +10,11 @@ struct PlayerTextComponent {
   std::string text;
   TTF_Font* font;
   short fontSize;
+  SDL_Rect lastLineRect{-1, -1, -1, -1};
 };
 
+struct PlayerPromptComponent {
+  std::string ainame;
+  std::string username;
+};
 

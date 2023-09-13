@@ -5,7 +5,9 @@
 
 #include "ECS/Entity.h"
 
-#include "Systems.h"
+#include "PocketAi/Ai/AiManager.h"
+#include "PocketAi/Systems/AiSystems.h"
+#include "Systems/Systems.h"
 #include "Components.h"
 
 
@@ -17,28 +19,32 @@ PocketAi::PocketAi()
 
 PocketAi::~PocketAi() {
     // destructor implementation
+  // temporarily clean the ai manager here
+  AiManager::tearDown();
 }
 
 Scene* PocketAi::createGameplayScene() {
   Scene* scene = new Scene("GAMEPLAY SCENE");
-
-  // ui systems
+  scene->addSetupSystem<CharacterSetupSystem>();
+  
+  // sprite / ui systems
   scene->addSetupSystem<UiSetupSystem>(renderer);
   scene->addRenderSystem<UiRenderSystem>();
-
-  // sprite systems
-  scene->addSetupSystem<CharacterSetupSystem>();
   scene->addRenderSystem<SpriteRenderSystem>();
   scene->addSetupSystem<BackgroundSetupSystem>();
-
   scene->addSetupSystem<SpriteSetupSystem>(renderer);
   scene->addUpdateSystem<SpriteUpdateSystem>();
 
-  // font
+  // text systems
   scene->addEventSystem<PlayerTextInputSystem>();
   scene->addSetupSystem<PlayerTextSetupSystem>();
+  scene->addUpdateSystem<PlayerTextOutputProcessSystem>();
   scene->addRenderSystem<PlayerTextRenderSystem>();
+  scene->addRenderSystem<PlayerCursorRenderSystem>();
   
+  // ai systems
+  scene->addSetupSystem<AiSetupSystem>();
+  scene->addUpdateSystem<AiPromptProcessingSystem>();
 
   return scene;
 }

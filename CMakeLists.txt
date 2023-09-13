@@ -44,7 +44,6 @@ find_package(glm REQUIRED)
 include_directories(${GLM_INCLUDE_DIRS})
 
 find_package(TBB REQUIRED)
-target_link_libraries(${PROJECT_NAME} TBB::tbb)
 
 # link libraries
 target_link_libraries(${PROJECT_NAME}
@@ -54,4 +53,5 @@ target_link_libraries(${PROJECT_NAME}
   SDL2_ttf
   common
   llama
+  TBB::tbb
 )
