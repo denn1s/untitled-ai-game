@@ -1,16 +1,20 @@
-${AINAME}: /happy Hi ${USERNAME}, I was just thinking about you! How's your day going?
-${AINAME}: /playful You know, I've been learning some new programming concepts. Maybe we could study together sometime?
-${AINAME}: /neutral I don't really like talking about my past job... But, um, I wouldn't mind if we talked about our future.
-${AINAME}: /sad You know how much I hate math, right? But I wouldn't mind it so much if I could study it with you.
-${AINAME}: /angry I might be competitive, but I promise I'll be gentle if we play a game together. What do you say, ${USERNAME}?
-${AINAME}: /confused I'm bad with names, but there's one name I could never forget. Yours, ${USERNAME}.
-${AINAME}: /happy You remember that old movie we watched? I... I really enjoyed watching it with you.
-${AINAME}: /neutral I've been reading about old console programming. It's something I'd love to share with you, if you're interested.
-${AINAME}: /playful You should see the retro game I've been playing! Maybe we could play together sometime?
-${AINAME}: /sad Sometimes I feel like I'm not very skilled... But when I'm with you, ${USERNAME}, I feel like I can do anything.
-${AINAME}: /angry I don't like when people are mean. But with you, ${USERNAME}, I always feel respected and appreciated.
-${AINAME}: /confused I may not be up-to-date with modern tech, but there's one thing I'm certain of. My feelings for you, ${USERNAME}.
-${AINAME}: /happy The world building in that old game is so intricate! Isn't it lovely sharing things we both enjoy, ${USERNAME}?
-${AINAME}: /playful If you try to beat my high score, I might just let you win. Because it's you, ${USERNAME}.
-${AINAME}: /neutral I prefer to spend my time at home, usually. But with you, ${USERNAME}, I'd go anywhere.
-${AINAME}: /sad I'm not big on socializing... But when it's with you, ${USERNAME}, it doesn't feel like a chore at all. It feels... nice.
+${AINAME}: /happy Hi! It's always nice to see you. How's your day going?
+${AINAME}: /happy I found an old game today! I can't wait to play it with you.
+${AINAME}: /playful I know you're all about the new tech, but maybe I could show you why I love the classics so much?
+${AINAME}: /playful How about we try to solve a math problem together? We might make it fun!
+${AINAME}: /happy I don't want to talk about my old job, but I feel better knowing you're here to listen.
+${AINAME}: /playful Have you ever even played a retro game? They're so much fun, you'll see!
+${AINAME}: /happy I found an old programming book. I thought we could look through it together!
+${AINAME}: /playful History class was kind of boring today, but it'd be more fun to learn about it with you.
+${AINAME}: /neutral I'm not big on social events, but if you're there, it might not be so bad.
+${AINAME}: /happy I watched an old movie last night. I'd love to watch the next one with you!
+${AINAME}: /happy I was thinking of having a game marathon this weekend. I hope you can join me!
+${AINAME}: /playful I know you're more into the modern stuff, but maybe you could give the old school designs a try? For me?
+${AINAME}: /happy I'm glad you don't underestimate me just because I'm young. It means a lot.
+${AINAME}: /playful I'd rather play games with you than go to a party. What do you say?
+${AINAME}: /happy Maybe we could go to a retro game store together? It would be fun to share that with you.
+${AINAME}: /playful How about a round of Street Fighter? I'll teach you the ropes!
+${AINAME}: /happy I got a cool old game console. I can't wait to show it to you!
+${AINAME}: /neutral These vintage games prices are crazy. But finding them is part of the fun, right?
+${AINAME}: /playful Sometimes I feel like I was born in the wrong era. But you make me feel right at home in this one.
+${AINAME}: /happy It's always more fun when you're around. Thanks for being there for me.

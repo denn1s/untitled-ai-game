@@ -17,10 +17,17 @@ class AiManager {
 public:
   static tbb::concurrent_queue<std::string> requestQueue;
   static tbb::concurrent_queue<std::string> responseQueue;
-  static void setUp(std::string userLabel, std::string aiLabel, std::string promptFile, std::string modelFile = "");
+  static void setUp(
+    const std::string& userLabel,
+    const std::string& aiLabel,
+    const std::string& promptFile,
+    const std::string& modelFile = ""
+  );
   static void run();
   static void tearDown();
+  static bool endsWithAntiPrompt(const std::string& str);
 private:
+  static std::string antiprompt; 
   static Base* model;
   static tbb::task_group taskGroup;
 };

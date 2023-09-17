@@ -33,7 +33,7 @@ void BackgroundSetupSystem::run() {
     bg.addComponent<SpriteComponent>(
         "Backgrounds/starry-sky.png",
          160, 65,
-         0,  0,
+         0,  1,
          8,
          2000
     );

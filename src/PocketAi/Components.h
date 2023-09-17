@@ -16,5 +16,13 @@ struct PlayerTextComponent {
 struct PlayerPromptComponent {
   std::string ainame;
   std::string username;
+  std::string currentPrompt = "";
+  bool isInteracting = false;
+};
+
+struct PlayerEmotionComponent {
+  std::string emotion;
+  int affection = 40;
+  bool isProcessingEmotion = false;
 };
 

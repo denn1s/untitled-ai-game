@@ -42,7 +42,6 @@ private:
   int n_consumed;
 
   bool is_antiprompt;
-  bool is_interacting;
   bool input_echo;
 
   bool evaluateTokensInBatches();

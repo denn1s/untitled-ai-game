@@ -24,7 +24,7 @@ Baka::~Baka() {}
 
 void Baka::initialize() {
   loadPrompts(this->initialPrompt);
-  std::this_thread::sleep_for(std::chrono::milliseconds(3000)); // simulate delay
+  /* std::this_thread::sleep_for(std::chrono::milliseconds(3000)); // simulate delay */
   isInitialized = true;
 }
 
@@ -41,13 +41,14 @@ void Baka::sample() {
 
     int random_index = dist(mt);
     std::string prompt = prompts[random_index] + "\n" + username;
-    prompt = std::regex_replace(prompt, std::regex("\\$\\{USERNAME\\}"), username.substr(0, username.size() - 2));
-    prompt = std::regex_replace(prompt, std::regex("\\$\\{AINAME\\}"), ainame.substr(0, ainame.size() - 2));
+    prompt = std::regex_replace(prompt, std::regex("\\$\\{USERNAME\\}"), username.substr(0, username.size() - 1));
+    prompt = std::regex_replace(prompt, std::regex("\\$\\{AINAME\\}"), ainame.substr(0, ainame.size() - 1));
+    prompt += " ";
 
-    for (size_t i = 0; i < prompt.size(); i+=3) {
-      std::string substring = prompt.substr(i, 3);
+    for (size_t i = 0; i < prompt.size(); i++) {
+      std::string substring = prompt.substr(i, 1);
       AiManager::responseQueue.push(substring);
-      std::this_thread::sleep_for(std::chrono::milliseconds(300)); // simulate delay
+      std::this_thread::sleep_for(std::chrono::milliseconds(100)); // simulate delay
     }
   }
 }

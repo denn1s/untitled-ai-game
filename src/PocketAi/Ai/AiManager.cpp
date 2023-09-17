@@ -1,12 +1,21 @@
 #include "AiManager.h"
-#include <oneapi/tbb/task_group.h>
+
+#include <string>
+#include <print.h>
+#include <tbb/task_group.h>
 
 tbb::concurrent_queue<std::string> AiManager::requestQueue;
 tbb::concurrent_queue<std::string> AiManager::responseQueue;
 Base* AiManager::model = nullptr;
 tbb::task_group AiManager::taskGroup;
+std::string AiManager::antiprompt;
 
-void AiManager::setUp(std::string userLabel, std::string aiLabel, std::string promptFile, std::string modelFile) {
+void AiManager::setUp(
+  const std::string& userLabel,
+  const std::string& aiLabel,
+  const std::string& promptFile,
+  const std::string& modelFile
+) {
   Smarts smarts = BAKA;
   if (!modelFile.empty()) {
     smarts = LLAMA;
@@ -14,11 +23,14 @@ void AiManager::setUp(std::string userLabel, std::string aiLabel, std::string pr
   switch(smarts) {
     case BAKA:
       model = new Baka(userLabel, aiLabel, modelFile, promptFile);
+      print("baka");
       break;
     case LLAMA:
       model = new Llama(userLabel, aiLabel, modelFile, promptFile);
+      print("llama");
       break;
   }
+  antiprompt = userLabel + " ";
 
   taskGroup.run([] {
     // this is extremely slow, minutes even
@@ -46,5 +58,13 @@ void AiManager::run() {
 
 void AiManager::tearDown() {
   taskGroup.wait();
+}
+
+bool AiManager::endsWithAntiPrompt(const std::string& str) {
+  if (str.length() >= antiprompt.length()) {
+    return (0 == str.compare(str.length() - antiprompt.length(), antiprompt.length(), antiprompt));
+  } else {
+    return false;
+  }
 }
 

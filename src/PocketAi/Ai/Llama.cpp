@@ -1,4 +1,5 @@
 #include "Llama.h"
+#include "PocketAi/Ai/AiManager.h"
 #include "log.h"
 #include "build-info.h"
 #include <print.h>
@@ -26,6 +27,9 @@ Llama::Llama(
   const std::string& modelFile,
   const std::string& promptFile
 ) {
+  this->username = username;
+  this->ainame = ainame;
+  fprintf(stderr, "Initializing llama engine");
   log_disable();
 
   isInitialized = false;
@@ -49,7 +53,6 @@ Llama::Llama(
   n_consumed = 0;
 
   is_antiprompt = false;
-  is_interacting = false;
   input_echo = true;
 
   initialPrompt = promptFile;
@@ -63,8 +66,8 @@ Llama::~Llama() {
 
 void Llama::initialize() {
   std::string prompt = readFromFile("assets/Prompts/" + initialPrompt);
-  prompt = std::regex_replace(prompt, std::regex("\\$\\{USERNAME\\}"), username.substr(0, username.size() - 2));
-  prompt = std::regex_replace(prompt, std::regex("\\$\\{AINAME\\}"), ainame.substr(0, ainame.size() - 2));
+  prompt = std::regex_replace(prompt, std::regex("\\$\\{USERNAME\\}"), username.substr(0, username.size() - 1));
+  prompt = std::regex_replace(prompt, std::regex("\\$\\{AINAME\\}"), ainame.substr(0, ainame.size() - 1));
   params.prompt = prompt;
 
   llama_backend_init(params.numa);
@@ -90,7 +93,7 @@ void Llama::initialize() {
             params.n_threads, std::thread::hardware_concurrency(), llama_print_system_info());
   }
 
-  const bool add_bos = llama_vocab_type(ctx) == LLAMA_VOCAB_TYPE_SPM;
+  /* const bool add_bos = llama_vocab_type(ctx) == LLAMA_VOCAB_TYPE_SPM; */
   tokens_list = ::llama_tokenize(ctx, params.prompt, true);
   max_context_size = llama_n_ctx(ctx);
 
@@ -104,7 +107,6 @@ void Llama::initialize() {
   }
 
   last_tokens.resize(max_context_size);
-  print(last_tokens.size());
   std::fill(last_tokens.begin(), last_tokens.end(), 0);
   const int n_vocab = llama_n_vocab(ctx);
   candidates.reserve(n_vocab);
@@ -113,10 +115,7 @@ void Llama::initialize() {
 }
 
 void Llama::process(const std::string& prompt) {
-  if (n_past > 0 && is_interacting) {
-    fprintf(stderr, "waiting for user input\n");
-    exit(1);
-
+  if (n_past > 0) {
     if (params.input_prefix_bos) {
       fprintf(stderr, "adding input prefix BOS token\n");
       tokens_list.push_back(llama_token_bos(ctx));
@@ -126,15 +125,9 @@ void Llama::process(const std::string& prompt) {
     if (!params.input_prefix.empty()) {
       fprintf(stderr, "appending input prefix: '%s'\n", params.input_prefix.c_str());
       buffer += params.input_prefix;
-      fprintf(stderr, "buffer after input prefix %s", buffer.c_str());
     }
 
-    std::string line;
-    bool another_line = true;
-    do {
-      another_line = "Can you read me";
-      buffer += line;
-    } while (another_line);
+    buffer += prompt;
 
     // Add tokens to embd only if the input buffer is non-empty
     // Entering a empty line lets the user pass control back
@@ -142,8 +135,17 @@ void Llama::process(const std::string& prompt) {
       // append input suffix if any
       if (!params.input_suffix.empty()) {
         fprintf(stderr, "appending input suffix: '%s'\n", params.input_suffix.c_str());
-        buffer += params.input_suffix;
-        fprintf(stderr, "input_suffix: %s", params.input_suffix.c_str());
+        buffer += params.input_suffix + " ";
+
+        // we need to echo the suffix back
+        for (char letter : params.input_suffix) {
+          // Check if the character is a valid ASCII character
+          if (letter >= 0 && letter < 128) {
+            /* fprintf(stderr, "Sent to response queue: %s\n", std::string(1, letter).c_str()); */
+            // Push the character into the response queue
+            AiManager::responseQueue.push(std::string(1, letter));
+          }
+        }
       }
 
       fprintf(stderr, "buffer: '%s'\n", buffer.c_str());
@@ -166,33 +168,41 @@ void Llama::process(const std::string& prompt) {
     }
 
     input_echo = false; // do not echo this again
+
+    is_antiprompt = false;  // we allow the processing of the buffer
   }
-  if (n_past > 0) {
-    is_interacting = false;
-  }
+  /* if (n_past > 0) { */
+  /*   is_interacting = false; */
+  /* } */
 }
 
 void Llama::sample() {
-  // predict
-  if (!embd.empty()) {
-    evaluateTokensInBatches();
-  }
+  while(!is_antiprompt) {
+    // predict
+    if (!embd.empty()) {
+      evaluateTokensInBatches();
+    }
 
-  addTokensToProcess();
-  processTokens();
+    addTokensToProcess();
+    processTokens();
 
-  // if not currently processing queued inputs;
-  if ((int) tokens_list.size() <= n_consumed) {
-    checkForAntiPrompt();
-    handleEOS();
-  }
+    // if not currently processing queued inputs;
+    if ((int) tokens_list.size() <= n_consumed) {
+      checkForAntiPrompt();
+      handleEOS();
+    }
 
-  // In interactive mode, respect the maximum number of tokens and drop back to user input when reached.
-  // We skip this logic when n_predict == -1 (infinite) or -2 (stop at context size).
-  if (params.interactive && n_remain <= 0 && params.n_predict >= 0) {
-    n_remain = params.n_predict;
-    is_interacting = true;
+    // In interactive mode, respect the maximum number of tokens and drop back to user input when reached.
+    // We skip this logic when n_predict == -1 (infinite) or -2 (stop at context size).
+    if (params.interactive && n_remain <= 0 && params.n_predict >= 0) {
+      n_remain = params.n_predict;
+      fprintf(stderr, "We reached the max number of tokens %d\n", n_remain);
+      break;
+    }
   }
+  /* print(">>>", output_ss.str()); */
+  /* AiManager::responseQueue.push(output_ss.str()); */
+  AiManager::responseQueue.push(" ");
 }
 
 void Llama::retrain(const std::string& promptFile) {
@@ -243,7 +253,7 @@ bool Llama::evaluateTokensInBatches() {
 }
 
 void Llama::addTokensToProcess() {
-  if ((int) tokens_list.size() <= n_consumed && !is_interacting) {
+  if ((int) tokens_list.size() <= n_consumed) {
     const llama_token id = llama_sample_token(ctx, NULL, NULL, params, last_tokens, candidates);
 
     last_tokens.erase(last_tokens.begin());
@@ -277,11 +287,20 @@ void Llama::processTokens() {
 
       if (embd.size() > 1) {
         input_tokens.push_back(id);
-        fprintf(stderr, "<<< %s \n", token_str.c_str());
+        /* fprintf(stderr, "<<< %s \n", token_str.c_str()); */
       } else {
         output_tokens.push_back(id);
         output_ss << token_str;
-        fprintf(stderr, ">>> %s \n", token_str.c_str());
+        /* fprintf(stderr, ">>> %s \n", token_str.c_str()); */
+
+        for (char letter : token_str) {
+          // Check if the character is a valid ASCII character
+          if (letter >= 0 && letter < 128) {
+            /* fprintf(stderr, "Sent to response queue: %s\n", std::string(1, letter).c_str()); */
+            // Push the character into the response queue
+            AiManager::responseQueue.push(std::string(1, letter));
+          }
+        }
       }
     }
   }
@@ -303,13 +322,9 @@ void Llama::checkForAntiPrompt() {
       size_t search_start_pos = last_output.length() > static_cast<size_t>(antiprompt.length())
         ? last_output.length() - static_cast<size_t>(antiprompt.length())
         : 0;
-
+      /* fprintf(stderr, "\n\nantiprompt: \"%s\" frag: \"%s\"\n\n\n", antiprompt.c_str(), last_output.substr(search_start_pos).c_str()); */
       if (last_output.find(antiprompt, search_start_pos) != std::string::npos) {
-        if (params.interactive) {
-          is_interacting = true;
-        }
         is_antiprompt = true;
-        print("we found anti prompt, now we need to wait for user input");
         break;
       }
     }
@@ -318,17 +333,15 @@ void Llama::checkForAntiPrompt() {
 
 void Llama::handleEOS() {
   if (last_tokens.back() == llama_token_eos(ctx)) {
-    fprintf(stderr, "found EOS token\n");
+    fprintf(stderr, "found EOS token, appending prompt at end\n");
 
-    if (params.interactive) {
       if (!params.antiprompt.empty()) {
         // tokenize and inject first reverse prompt
-        const auto first_antiprompt = ::llama_tokenize(ctx, params.antiprompt.front(), false);
+        const auto first_antiprompt = ::llama_tokenize(ctx, "\n" + params.antiprompt.front() + " ", false);
         tokens_list.insert(tokens_list.end(), first_antiprompt.begin(), first_antiprompt.end());
-        is_antiprompt = true;
+        /* is_antiprompt = true; */
+        // we let the output loop once more
       }
-      is_interacting = true;
-    }
   }
 }
 

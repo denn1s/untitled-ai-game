@@ -11,8 +11,9 @@
 void CharacterSetupSystem::run() {
     scene->player = new Entity(scene->r.create(), scene);
     scene->player->addComponent<TransformComponent>(0, 24 * SCALE);  // ui offset
-    scene->player->addComponent<SpriteComponent>("Characters/main.png");
+    scene->player->addComponent<SpriteComponent>("Characters/main.png", 160, 65, 0, 0);
     scene->player->addComponent<PlayerTextComponent>();
+    scene->player->addComponent<PlayerEmotionComponent>();
     scene->player->addComponent<PlayerPromptComponent>("Pocket: ", "Rob: ");
 }
 
