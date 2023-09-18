@@ -16,16 +16,16 @@ UiSetupSystem::UiSetupSystem(SDL_Renderer* renderer)
 
 void UiSetupSystem::run() {
     TextureManager::LoadTexture("UI/main.png", renderer);
+    scene->world = new Entity(scene->r.create(), scene);
+    scene->world->addComponent<TransformComponent>(0, 0);
+    scene->world->addComponent<SpriteComponent>("UI/main.png", 160, 144, 0, 0);
 }
 
-void UiRenderSystem::run(SDL_Renderer* renderer) {
-    Texture* texture = TextureManager::GetTexture("UI/main.png");
+void UiUpdateSystem::run(double dT) {
+    auto& uiSpriteComponent = scene->world->get<SpriteComponent>();
+    int affection = scene->player->get<PlayerEmotionComponent>().affection;
 
-    texture->render(
-        0, 0,
-        SCREEN_WIDTH * SCALE,
-        SCREEN_HEIGHT * SCALE
-    );
+    uiSpriteComponent.xIndex = static_cast<int>(affection / 16);
 }
 
 void BackgroundSetupSystem::run() {
@@ -33,7 +33,7 @@ void BackgroundSetupSystem::run() {
     bg.addComponent<SpriteComponent>(
         "Backgrounds/starry-sky.png",
          160, 65,
-         0,  1,
+         0,  3,
          8,
          2000
     );

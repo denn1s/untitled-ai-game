@@ -1,5 +1,7 @@
 #include "AiSystems.h"
 
+#include <algorithm>
+#include <random>
 #include <print.h>
 
 #include "ECS/Components.h"
@@ -61,14 +63,36 @@ void AiEmotionProcessingSystem::run(double dT) {
   auto& emotionComponent = scene->player->get<PlayerEmotionComponent>();
   auto& playerSpriteComponent = scene->player->get<SpriteComponent>();
 
-  print("emotion", emotionComponent.emotion);
-
   int value = (emotionMap.find(emotionComponent.emotion) != emotionMap.end()) ? emotionMap[emotionComponent.emotion] : -1;
 
   if (value != -1) {
     playerSpriteComponent.xIndex = value;
-    playerSpriteComponent.yIndex = rand() % 5 < 2 ? 0 : rand() % 5 < 4 ? 1 : 2;
+    
+    std::mt19937 mt{static_cast<std::mt19937::result_type>(dT)};
+    std::uniform_real_distribution<double> dist(0, 1);
+    double random_number = dist(mt);
+    playerSpriteComponent.yIndex = random_number < 0.2 ? 1 : random_number < 0.6 ? 0 : 2;
+    
+    vprint(emotionComponent.emotion);
     emotionComponent.emotion = "";
+
+    if (value == 0) {
+      emotionComponent.affection += 5;
+    } else if (value == 1) {
+      emotionComponent.affection += 7;
+    } else if (value == 2) {
+      emotionComponent.affection += 10;
+    } else if (value == 3) {
+      emotionComponent.affection -= 5;
+    } else if (value == 4) {
+      emotionComponent.affection -= 10;
+    } else if (value == 5) {
+      emotionComponent.affection -= 15;
+    }
+
+    emotionComponent.affection = std::clamp(emotionComponent.affection, 0, 99);
+
+    vprint(emotionComponent.affection);
   }
 }
 

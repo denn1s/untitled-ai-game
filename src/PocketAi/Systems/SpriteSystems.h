@@ -14,9 +14,9 @@ private:
   SDL_Renderer* renderer;
 };
 
-class UiRenderSystem : public RenderSystem {
+class UiUpdateSystem : public UpdateSystem {
 public:
-  void run(SDL_Renderer* renderer) override;
+  void run(double dT) override;
 };
 
 class BackgroundSetupSystem : public SetupSystem {

@@ -53,7 +53,8 @@ void PlayerTextInputSystem::run(SDL_Event event) {
                 playerTextComponent.text += "\n";
                 std::string prompt = playerTextComponent.text.substr(pos + playerPromptComponent.username.size());
                 playerPromptComponent.isInteracting = false;       
-                AiManager::requestQueue.push(prompt);
+                /* AiManager::requestQueue.push(prompt); */
+                AiManager::requestQueue.push("/neutral " + prompt);  // slight hack to make her used to answering with emotions
             }
             /* playerTextComponent.text.clear(); */
         }

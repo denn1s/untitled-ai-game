@@ -29,7 +29,6 @@ Scene* PocketAi::createGameplayScene() {
   
   // sprite / ui systems
   scene->addSetupSystem<UiSetupSystem>(renderer);
-  scene->addRenderSystem<UiRenderSystem>();
   scene->addRenderSystem<SpriteRenderSystem>();
   scene->addSetupSystem<BackgroundSetupSystem>();
   scene->addSetupSystem<SpriteSetupSystem>(renderer);
@@ -40,6 +39,7 @@ Scene* PocketAi::createGameplayScene() {
   scene->addUpdateSystem<AiPromptProcessingSystem>();
   scene->addUpdateSystem<AiPromptPostProcessingSystem>();
   scene->addUpdateSystem<AiEmotionProcessingSystem>();
+  scene->addUpdateSystem<UiUpdateSystem>();
 
   // text systems
   scene->addEventSystem<PlayerTextInputSystem>();
