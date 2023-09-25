@@ -7,6 +7,7 @@
 
 #include "PocketAi/Ai/AiManager.h"
 #include "PocketAi/Systems/AiSystems.h"
+#include "PocketAi/Systems/TextSystems.h"
 #include "Systems/Systems.h"
 #include "Components.h"
 
@@ -46,6 +47,7 @@ Scene* PocketAi::createGameplayScene() {
   scene->addSetupSystem<PlayerTextSetupSystem>();
   /* scene->addUpdateSystem<PlayerTextOutputProcessSystem>(); */
   scene->addRenderSystem<PlayerTextRenderSystem>();
+  scene->addRenderSystem<SampleRenderSystem>();
   scene->addRenderSystem<PlayerCursorRenderSystem>();
   
 

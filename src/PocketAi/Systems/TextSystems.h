@@ -30,3 +30,9 @@ public:
   void run(double dT);
 };
 
+class SampleRenderSystem : public RenderSystem {
+public:
+  void run(SDL_Renderer* renderer);
+};
+
+

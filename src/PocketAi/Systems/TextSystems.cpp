@@ -61,6 +61,26 @@ void PlayerTextInputSystem::run(SDL_Event event) {
     }
 }
 
+static int count =  0;
+
+void SampleRenderSystem::run(SDL_Renderer* r) {
+    const auto playerTextComponent = scene->player->get<PlayerTextComponent>();
+
+    const std::string text = "HELLO WORLD:";
+
+    SDL_Surface* textSurface = TTF_RenderText_Solid(playerTextComponent.font, text.c_str(), {255, 0, 0});
+    
+    SDL_Texture* textTexture = SDL_CreateTextureFromSurface(r, textSurface);
+    SDL_Rect position;
+    position.x = 0;
+    position.y = 0;
+    position.w = textSurface->w;
+    position.h = textSurface->h;
+
+    SDL_RenderCopy(r, textTexture, NULL, &position);
+}
+
+
 void renderLine(SDL_Renderer* renderer, TTF_Font* font, const std::string& line, SDL_Rect& position) {
     SDL_Surface* textSurface = TTF_RenderText_Solid(font, line.c_str(), {226, 246, 228});
     
