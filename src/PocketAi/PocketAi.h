@@ -8,6 +8,9 @@ class PocketAi : public Game {
     PocketAi();
     ~PocketAi();
 
+    void setup() override;
+
   private:
+    Scene* createLogoScene();
     Scene* createGameplayScene();
 };

@@ -26,3 +26,10 @@ struct PlayerEmotionComponent {
   bool isProcessingEmotion = false;
 };
 
+struct SlideShowComponent {
+  short slideCount;
+  int slideDurationMillis = 0;
+  Uint32 lastUpdate = 0;
+  short currentSlide = 0;
+};
+

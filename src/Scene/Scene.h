@@ -11,21 +11,25 @@ class UpdateSystem;
 class RenderSystem;
 
 class Scene {
-  private:
+  public:
     std::vector<std::shared_ptr<SetupSystem>> setupSystems;
     std::vector<std::shared_ptr<EventSystem>> eventSystems;
     std::vector<std::shared_ptr<UpdateSystem>> updateSystems;
     std::vector<std::shared_ptr<RenderSystem>> renderSystems;
     std::string name;
 
-  public:
-    Scene(const std::string&);
+    Scene(const std::string&, entt::registry& r);
     ~Scene();
+   
+    Scene() = delete;
+    Scene(const Scene&) = delete;
+    Scene& operator=(const Scene&) = delete;
 
-    entt::registry r;
     Entity* world;
     Entity* mainCamera;
     Entity* player;
+
+    entt::registry& r;
 
     Entity createEntity(
       const std::string& name = "NO NAME",
@@ -33,34 +37,6 @@ class Scene {
       int y = 0
     );
     
-    template<typename T>
-    void addSetupSystem(auto&&... args) {
-        auto system = std::make_shared<T>(std::forward<decltype(args)>(args)...);
-        system->setScene(this);
-        setupSystems.push_back(system);
-    }
-
-    template<typename T>
-    void addEventSystem(auto&&... args) {
-        auto system = std::make_shared<T>(std::forward<decltype(args)>(args)...);
-        system->setScene(this);
-        eventSystems.push_back(system);
-    }
-
-    template<typename T>
-    void addUpdateSystem(auto&&... args) {
-        auto system = std::make_shared<T>(std::forward<decltype(args)>(args)...);
-        system->setScene(this);
-        updateSystems.push_back(system);
-    }
-
-    template<typename T>
-    void addRenderSystem(auto&&... args) {
-        auto system = std::make_shared<T>(std::forward<decltype(args)>(args)...);
-        system->setScene(this);
-        renderSystems.push_back(system);
-    }
-
     void setup();
     void update(double dT);
     void render(SDL_Renderer* renderer);

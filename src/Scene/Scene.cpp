@@ -9,11 +9,9 @@
 #include "ECS/System.h"
 
 
-Scene::Scene(const std::string& name)
-  : name(name)
+Scene::Scene(const std::string& name, entt::registry& r)
+  : name(name), r(r)
 {
-  // print("Scene ", name, "constructed!");
-
   world = new Entity(r.create(), this);
   world->addComponent<TilemapComponent>();
   world->addComponent<WorldComponent>(800 * 5, 600 * 5);

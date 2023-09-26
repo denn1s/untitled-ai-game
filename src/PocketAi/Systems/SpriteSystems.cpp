@@ -1,5 +1,7 @@
 #include "SpriteSystems.h"
 
+#include <SDL_stdinc.h>
+#include <SDL_timer.h>
 #include <print.h>
 #include <constants.h>
 #include <SDL2/SDL.h>
@@ -37,6 +39,48 @@ void BackgroundSetupSystem::run() {
          8,
          2000
     );
+}
+
+SlideShowSetupSystem::SlideShowSetupSystem(const std::string& image, short slideCount, int slideDurationMillis)
+    : image(image), slideCount(slideCount), slideDurationMillis(slideDurationMillis) {}
+
+void SlideShowSetupSystem::run() {
+    Entity slider = scene->createEntity("SLIDER", 0, 0);
+    slider.addComponent<SpriteComponent>(
+        image,
+        160, 144,
+        0, 0,
+        31, 2000,
+        PixelShader{ nullptr, "" },
+        SDL_GetTicks(),
+        true,
+        2000
+    );
+    slider.addComponent<SlideShowComponent>(
+        slideCount,
+        slideDurationMillis,
+        SDL_GetTicks()
+    );
+}
+
+void SlideShowUpdateSystem::run(double dT) {
+    Uint32 now = SDL_GetTicks();
+    auto view = scene->r.view<SlideShowComponent, SpriteComponent>();
+
+    for(auto entity : view) {
+        auto& slideComponent = scene->r.get<SlideShowComponent>(entity);
+        auto& spriteComponent = scene->r.get<SpriteComponent>(entity);
+
+        if (slideComponent.slideCount > 0 && slideComponent.slideCount > slideComponent.currentSlide) {
+            Uint32 timeSinceLastUpdate = now - slideComponent.lastUpdate;
+
+            if (timeSinceLastUpdate >= slideComponent.slideDurationMillis) {
+                slideComponent.lastUpdate = now; 
+                slideComponent.currentSlide++;
+                spriteComponent.xIndex = slideComponent.currentSlide;
+            }
+        }
+    }
 }
 
 void SpriteRenderSystem::run(SDL_Renderer* renderer) {
@@ -106,15 +150,27 @@ void SpriteUpdateSystem::run(double dT) {
 
             float timeSinceLastUpdate = now - spriteComponent.lastUpdate;
 
+            if (spriteComponent.delay != 0) {
+                if (timeSinceLastUpdate < spriteComponent.delay) {
+                    continue;
+                } else {
+                    spriteComponent.delay = 0;
+                    spriteComponent.lastUpdate = 0;
+                    timeSinceLastUpdate = 0;
+                }
+            }
+            
             int framesToUpdate = static_cast<int>(
                 timeSinceLastUpdate / 
                 spriteComponent.animationDuration * spriteComponent.animationFrames
             );
 
             if (framesToUpdate > 0) {
-                spriteComponent.xIndex += framesToUpdate;
-                spriteComponent.xIndex %= spriteComponent.animationFrames;
-                spriteComponent.lastUpdate = now;            
+                if (!spriteComponent.once || spriteComponent.xIndex < (spriteComponent.animationFrames - 1)) {
+                    spriteComponent.xIndex += framesToUpdate;
+                    spriteComponent.xIndex %= spriteComponent.animationFrames;
+                    spriteComponent.lastUpdate = now;
+                }
             }
         }
     }

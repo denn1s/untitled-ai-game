@@ -13,8 +13,8 @@ AiSetupSystem::~AiSetupSystem() {
 }
 
 void AiSetupSystem::run() {
-  AiManager::setUp( "Rob:", "Pocket:", "initial.txt", "model" );
-  /* AiManager::setUp( "Rob:", "Pocket:", "baka-high.txt"); */
+  /* AiManager::setUp( "Rob:", "Pocket:", "initial.txt", "model" ); */
+  AiManager::setUp( "Rob:", "Pocket:", "baka-high.txt");
 }
 
 void AiPromptProcessingSystem::run(double dT) {

@@ -30,8 +30,9 @@ struct SpriteComponent {
   int animationFrames = 0;
   int animationDuration = 0;
   PixelShader shader = { nullptr, "" };
-
   Uint32 lastUpdate = 0;
+  bool once = false;
+  Uint32 delay = 0;
 };
 
 struct TilemapComponent {

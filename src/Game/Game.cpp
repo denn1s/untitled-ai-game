@@ -37,15 +37,12 @@ Game::Game(const char* title, int width, int height)
 
   frameStartTimestamp = 0;
   frameEndTimestamp = 0;
+
+  currentScene = nullptr;
 }
 
 Game::~Game()
 {}
-
-void Game::setup()
-{
-  currentScene->setup();
-}
 
 void Game::frameStart()
 {
@@ -133,7 +130,10 @@ bool Game::running()
 
 void Game::run()
 {
-    setup();
+  if (currentScene == nullptr) {
+    print("No scene was initialized. There's nothing to do.");
+    exit(1);
+  }
 
     while (running())
     {
@@ -148,7 +148,13 @@ void Game::run()
 }
 
 void Game::setScene(Scene* newScene) {
+  newScene->setup();
+
+  // todo: destroy previous scene?
+
   currentScene = newScene;
+
+  // todo: move this somewhere else?
 }
 
 Scene* Game::getCurrentScene() const {

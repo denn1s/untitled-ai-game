@@ -7,16 +7,14 @@
 
 #include "PocketAi/Ai/AiManager.h"
 #include "PocketAi/Systems/AiSystems.h"
+#include "PocketAi/Systems/SpriteSystems.h"
 #include "PocketAi/Systems/TextSystems.h"
 #include "Systems/Systems.h"
 #include "Components.h"
 
 
 PocketAi::PocketAi()
-  : Game("Ai", SCREEN_WIDTH * SCALE, SCREEN_HEIGHT * SCALE) {
-  Scene* gameplayScene = createGameplayScene();
-  setScene(gameplayScene);
-}
+  : Game("Ai", SCREEN_WIDTH * SCALE, SCREEN_HEIGHT * SCALE) { }
 
 PocketAi::~PocketAi() {
     // destructor implementation
@@ -24,31 +22,45 @@ PocketAi::~PocketAi() {
   AiManager::tearDown();
 }
 
+void PocketAi::setup() {
+  Scene* logoScene = createLogoScene();
+  setScene(logoScene);
+}
+
+Scene* PocketAi::createLogoScene() {
+  Scene* scene = new Scene("LOGO SCENE", r);
+  addSetupSystem<SlideShowSetupSystem>(scene, "Backgrounds/gamedev.png", 1, 10000);
+  addSetupSystem<SpriteSetupSystem>(scene, renderer);
+  addUpdateSystem<SpriteUpdateSystem>(scene);
+  /* addUpdateSystem<SlideShowUpdateSystem>(scene); */
+  addRenderSystem<SpriteRenderSystem>(scene);
+  return scene;
+}
+
 Scene* PocketAi::createGameplayScene() {
-  Scene* scene = new Scene("GAMEPLAY SCENE");
-  scene->addSetupSystem<CharacterSetupSystem>();
+  Scene* scene = new Scene("GAMEPLAY SCENE", r);
+  addSetupSystem<CharacterSetupSystem>(scene);
   
   // sprite / ui systems
-  scene->addSetupSystem<UiSetupSystem>(renderer);
-  scene->addRenderSystem<SpriteRenderSystem>();
-  scene->addSetupSystem<BackgroundSetupSystem>();
-  scene->addSetupSystem<SpriteSetupSystem>(renderer);
-  scene->addUpdateSystem<SpriteUpdateSystem>();
+  addSetupSystem<UiSetupSystem>(scene, renderer);
+  addRenderSystem<SpriteRenderSystem>(scene);
+  addSetupSystem<SpriteSetupSystem>(scene, renderer);
+  addUpdateSystem<SpriteUpdateSystem>(scene);
 
   // ai systems
-  scene->addSetupSystem<AiSetupSystem>();
-  scene->addUpdateSystem<AiPromptProcessingSystem>();
-  scene->addUpdateSystem<AiPromptPostProcessingSystem>();
-  scene->addUpdateSystem<AiEmotionProcessingSystem>();
-  scene->addUpdateSystem<UiUpdateSystem>();
+  addSetupSystem<AiSetupSystem>(scene);
+  addUpdateSystem<AiPromptProcessingSystem>(scene);
+  addUpdateSystem<AiPromptPostProcessingSystem>(scene);
+  addUpdateSystem<AiEmotionProcessingSystem>(scene);
+  addUpdateSystem<UiUpdateSystem>(scene);
 
   // text systems
-  scene->addEventSystem<PlayerTextInputSystem>();
-  scene->addSetupSystem<PlayerTextSetupSystem>();
+  addEventSystem<PlayerTextInputSystem>(scene);
+  addSetupSystem<PlayerTextSetupSystem>(scene);
   /* scene->addUpdateSystem<PlayerTextOutputProcessSystem>(); */
-  scene->addRenderSystem<PlayerTextRenderSystem>();
-  scene->addRenderSystem<SampleRenderSystem>();
-  scene->addRenderSystem<PlayerCursorRenderSystem>();
+  addRenderSystem<PlayerTextRenderSystem>(scene);
+  addRenderSystem<SampleRenderSystem>(scene);
+  addRenderSystem<PlayerCursorRenderSystem>(scene);
   
 
   return scene;
