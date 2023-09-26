@@ -31,7 +31,7 @@ class Scene {
 
     entt::registry& r;
 
-    Entity createEntity(
+    Entity* createEntity(
       const std::string& name = "NO NAME",
       int x = 0,
       int y = 0

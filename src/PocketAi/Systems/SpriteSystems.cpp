@@ -31,8 +31,8 @@ void UiUpdateSystem::run(double dT) {
 }
 
 void BackgroundSetupSystem::run() {
-    Entity bg = scene->createEntity("BG", 0, 24 * SCALE);
-    bg.addComponent<SpriteComponent>(
+    Entity* bg = scene->createEntity("BG", 0, 24 * SCALE);
+    bg->addComponent<SpriteComponent>(
         "Backgrounds/starry-sky.png",
          160, 65,
          0,  2,
@@ -41,22 +41,17 @@ void BackgroundSetupSystem::run() {
     );
 }
 
-SlideShowSetupSystem::SlideShowSetupSystem(const std::string& image, short slideCount, int slideDurationMillis)
-    : image(image), slideCount(slideCount), slideDurationMillis(slideDurationMillis) {}
+SlideShowSetupSystem::SlideShowSetupSystem(SpriteComponent sprite, short slideCount, int slideDurationMillis)
+    : sprite(sprite), slideCount(slideCount), slideDurationMillis(slideDurationMillis) {}
+
+SlideShowSetupSystem::~SlideShowSetupSystem() {
+    delete slider;
+}
 
 void SlideShowSetupSystem::run() {
-    Entity slider = scene->createEntity("SLIDER", 0, 0);
-    slider.addComponent<SpriteComponent>(
-        image,
-        160, 144,
-        0, 0,
-        31, 2000,
-        PixelShader{ nullptr, "" },
-        SDL_GetTicks(),
-        true,
-        2000
-    );
-    slider.addComponent<SlideShowComponent>(
+    slider = scene->createEntity("SLIDER", 0, 0);
+    slider->addComponent<SpriteComponent>(sprite);
+    slider->addComponent<SlideShowComponent>(
         slideCount,
         slideDurationMillis,
         SDL_GetTicks()
@@ -85,12 +80,11 @@ void SlideShowUpdateSystem::run(double dT) {
 
 void SpriteRenderSystem::run(SDL_Renderer* renderer) {
     auto view = scene->r.view<TransformComponent, SpriteComponent>();
-
     for(auto entity : view) {
         const auto spriteComponent = view.get<SpriteComponent>(entity);
         const auto transformComponent = view.get<TransformComponent>(entity);
-
         Texture* texture = TextureManager::GetTexture(spriteComponent.name, spriteComponent.shader.name);
+
         const int width = spriteComponent.w > 0 ? spriteComponent.w : texture->width;
         const int height = spriteComponent.h > 0 ? spriteComponent.h : texture->height;
 
@@ -116,7 +110,6 @@ SpriteSetupSystem::~SpriteSetupSystem() {
 
     for(auto entity : view) {
         const auto spriteComponent = view.get<SpriteComponent>(entity);
-
         TextureManager::UnloadTexture(spriteComponent.name, spriteComponent.shader.name);
     }
 }
@@ -129,7 +122,6 @@ void SpriteSetupSystem::run() {
 
     for(auto entity : view) {
         const auto spriteComponent = view.get<SpriteComponent>(entity);
-
         TextureManager::LoadTexture(spriteComponent.name, renderer, spriteComponent.shader);
     }
 }
@@ -175,4 +167,28 @@ void SpriteUpdateSystem::run(double dT) {
         }
     }
 }
+
+/*
+FadeSetupSystem::FateSetupSystem(SDL_Renderer* renderer, SDL_Window* window)
+    : renderer(renderer),  { }
+
+void FateSetupSystem::run() {
+    if (scene->world == nullptr) {
+        scene->world = new Entity(scene->r.create(), scene);
+    }
+    SDL_Color fadeColor = {226, 246, 228};
+    SDL_Surface* screen = SDL_GetWindowSurface(window);
+    SDL_Surface* fade = SDL_CreateRGBSurface(0, screen->w, screen->h, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+    SDL_FillRect(fade, NULL, SDL_MapRGB(fade->format, fadeColor.r, fadeColor.g, fadeColor.b));
+    scene->world->addComponent<FadeComponent>(fadeColor, 500);
+}
+
+void UiUpdateSystem::run(double dT) {
+    auto& uiSpriteComponent = scene->world->get<SpriteComponent>();
+    int affection = scene->player->get<PlayerEmotionComponent>().affection;
+
+    uiSpriteComponent.xIndex = static_cast<int>(affection / 16);
+}
+*/
+
 

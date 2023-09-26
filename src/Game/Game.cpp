@@ -64,21 +64,20 @@ void Game::frameEnd()
 
   float actualFrameDuration = frameEndTimestamp - frameStartTimestamp;
 
-  if (actualFrameDuration < frameDuration)
-  {
+  if (actualFrameDuration < frameDuration) {
     SDL_Delay(frameDuration - actualFrameDuration);
   }
   
   frameCount++;
   // Update FPS counter every second
   Uint32 currentTime = SDL_GetTicks();
-  if (currentTime - lastFPSUpdateTime > 1000) // 1000 milliseconds in 1 second
-  {
+  if (currentTime - lastFPSUpdateTime > 1000) {
     FPS = frameCount / ((currentTime - lastFPSUpdateTime) / 1000.0f);
     lastFPSUpdateTime = currentTime;
+
     if (FPS > 0) {
       std::ostringstream titleStream;
-      titleStream << " FPS: " << FPS; 
+      titleStream << " FPS: " << static_cast<int>(FPS); 
       SDL_SetWindowTitle(window, titleStream.str().c_str());
     }
     frameCount = 0; // Reset frame count after updating FPS
@@ -88,11 +87,13 @@ void Game::frameEnd()
 void Game::handleEvents()
 {
   SDL_Event event;
-  while (SDL_PollEvent(&event) != 0)
-  {
-    if (event.type == SDL_QUIT)
-    {
+  while (SDL_PollEvent(&event) != 0) {
+    if (event.type == SDL_QUIT) {
       isRunning = false;
+    }
+
+    if (currentScene != nullptr) {
+      currentScene->update(dT);
     }
 
     currentScene->processEvents(event);
@@ -101,18 +102,21 @@ void Game::handleEvents()
 
 void Game::update()
 {
-  currentScene->update(dT);
+  if (currentScene != nullptr) {
+    currentScene->update(dT);
+  }
 }
 
 void Game::render()
 {
-  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 1);
-  SDL_RenderClear(renderer);
+  if (currentScene != nullptr) {
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 1);
+    SDL_RenderClear(renderer);
   
-  currentScene->render(renderer);
+    currentScene->render(renderer);
 
-  SDL_RenderPresent(renderer);
-  /* vprint(FPS); */
+    SDL_RenderPresent(renderer);
+  }
 }
 
 void Game::clean()
@@ -135,26 +139,23 @@ void Game::run()
     exit(1);
   }
 
-    while (running())
-    {
-      frameStart();
-      handleEvents();
-      update();
-      render();
-      frameEnd();
-    }
+  while (running() && currentScene != nullptr)
+  {
+    frameStart();
+    handleEvents();
+    update();
+    render();
+    frameEnd();
+  }
 
-    clean();
+  clean();
 }
 
 void Game::setScene(Scene* newScene) {
-  newScene->setup();
-
-  // todo: destroy previous scene?
-
+  if (newScene != nullptr) {
+    newScene->setup();
+  }
   currentScene = newScene;
-
-  // todo: move this somewhere else?
 }
 
 Scene* Game::getCurrentScene() const {

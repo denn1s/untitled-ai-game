@@ -33,3 +33,13 @@ struct SlideShowComponent {
   short currentSlide = 0;
 };
 
+/*
+struct FadeComponent {
+  SDL_Color fadeColor;
+  Uint32 fadeTimeMillis;
+  short alpha = 255;
+  bool direction = 1; // 0 out, 1 in
+  SDL_Surface* screen = nullptr;
+  SDL_Surface* fade = nullptr;
+};
+*/

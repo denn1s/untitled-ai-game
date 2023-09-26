@@ -2,6 +2,7 @@
 
 #include "Game/Game.h"
 
+#include <queue>
 
 class PocketAi : public Game {
   public:
@@ -9,8 +10,11 @@ class PocketAi : public Game {
     ~PocketAi();
 
     void setup() override;
+    void sceneTransition();
 
   private:
+    std::queue<Scene*> scenes;
     Scene* createLogoScene();
+    Scene* createCreditsScene();
     Scene* createGameplayScene();
 };

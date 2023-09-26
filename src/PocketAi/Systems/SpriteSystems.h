@@ -3,6 +3,7 @@
 #include <SDL2/SDL.h>
 #include <SDL_render.h>
 
+#include "ECS/Components.h"
 #include "ECS/System.h"
 
 class UiSetupSystem : public SetupSystem {
@@ -47,11 +48,13 @@ public:
 
 class SlideShowSetupSystem : public SetupSystem {
 public:
-  SlideShowSetupSystem(const std::string& image, short slideCount, int slideDurationMillis);
+  SlideShowSetupSystem(SpriteComponent sprite, short slideCount, int slideDurationMillis);
+  ~SlideShowSetupSystem();
   void run() override;
 
 private:
-  std::string image;
+  Entity* slider;  // we keep this reference to delete it later
+  SpriteComponent sprite;
   short slideCount;
   int slideDurationMillis;
 };

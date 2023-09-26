@@ -17,3 +17,18 @@ void CharacterSetupSystem::run() {
     scene->player->addComponent<PlayerPromptComponent>("Pocket: ", "Rob: ");
 }
 
+SceneTransitionOnSlideUpdateSystem::SceneTransitionOnSlideUpdateSystem(std::function<void()> changeScene)
+  : changeScene(changeScene) { }
+
+
+void SceneTransitionOnSlideUpdateSystem::run(double dT) {
+    auto view = scene->r.view<SlideShowComponent>();
+
+    for (auto entity : view) {
+        auto& slideComponent = scene->r.get<SlideShowComponent>(entity);
+   
+        if (slideComponent.currentSlide >= slideComponent.slideCount) {
+          changeScene();
+        }
+    }
+}

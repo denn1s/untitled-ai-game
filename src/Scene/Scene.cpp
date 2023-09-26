@@ -12,6 +12,7 @@
 Scene::Scene(const std::string& name, entt::registry& r)
   : name(name), r(r)
 {
+  /*
   world = new Entity(r.create(), this);
   world->addComponent<TilemapComponent>();
   world->addComponent<WorldComponent>(800 * 5, 600 * 5);
@@ -21,22 +22,23 @@ Scene::Scene(const std::string& name, entt::registry& r)
   mainCamera->addComponent<CameraComponent>(5, 800, 600);
 
   player = new Entity(r.create(), this);
-  /* player->addComponent<TransformComponent>((800 * 5)/2 - 48/2, (600 * 5)/2 - 48/2); */
   player->addComponent<TransformComponent>(500, 500);
   player->addComponent<BoxColliderComponent>(16, 16, 16, 16);
   player->addComponent<SpeedComponent>(0, 0);
+  */
 }
 
 Scene::~Scene()
 {
-  // print("Scene Destroyed!");
+  print("Scene Destroyed!");
 }
 
-Entity Scene::createEntity(const std::string& name, int x, int y)
+Entity* Scene::createEntity(const std::string& name, int x, int y)
 {
-  Entity entity = { r.create(), this };
-  entity.addComponent<NameComponent>(name);
-  entity.addComponent<TransformComponent>(x, y);
+  print("Create entity", name);
+  Entity* entity = new Entity(r.create(), this );
+  entity->addComponent<NameComponent>(name);
+  entity->addComponent<TransformComponent>(x, y);
 
   return entity;
 }
@@ -80,3 +82,4 @@ void Scene::processEvents(SDL_Event event)
     sys->run(event);
   }
 }
+
