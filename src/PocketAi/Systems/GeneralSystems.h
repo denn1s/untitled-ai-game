@@ -8,6 +8,8 @@
 
 class CharacterSetupSystem : public SetupSystem {
 public:
+  /* CharacterSetupSystem(); */
+  ~CharacterSetupSystem();
   void run() override;
 };
 
@@ -25,5 +27,10 @@ public:
   void run(SDL_Event event) override;
 private:
   std::function<void()> changeScene;
+};
+
+class AffectionSetupSystem : public SetupSystem {
+public:
+  void run() override;
 };
 

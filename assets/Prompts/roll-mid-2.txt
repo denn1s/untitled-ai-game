@@ -1,0 +1,4 @@
+${AINAME}: /neutral So, have you ever played any old school video games?
+${AINAME}: /neutral I'm not really up to date with the latest tech, you know. I prefer things with a bit of nostalgia.
+${AINAME}: /playful Don't even start with math problems! I'm terrible at those.
+${AINAME}: /playful I bet you couldn't beat me at Tetris!

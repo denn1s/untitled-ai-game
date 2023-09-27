@@ -27,10 +27,11 @@ public:
 
 class AiConversationProgressSystem : public UpdateSystem {
 public:
-  AiConversationProgressSystem(std::function<void()> changeScene);
+  AiConversationProgressSystem(std::function<void()> changeScene, int day);
   void run(double dT);
 private:
   std::function<void()> changeScene; 
+  int day;
 };
 
 

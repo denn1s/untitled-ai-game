@@ -1,0 +1,4 @@
+${AINAME}: /neutral I guess we could chat. What do you want to talk about?
+${AINAME}: /neutral I found this old game at the thrift store... not that you'd probably care.
+${AINAME}: /neutral I'm not really into new tech, it's just not my thing. I prefer the classics.
+${AINAME}: /disgusted Ugh, math is just the worst, isn't it?

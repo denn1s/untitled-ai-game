@@ -1,0 +1,4 @@
+${AINAME}: /playful Have you ever even played a retro game? They're so much fun, you'll see!
+${AINAME}: /happy I found an old programming book. I thought we could look through it together!
+${AINAME}: /playful History class was kind of boring today, but it'd be more fun to learn about it with you.
+${AINAME}: /neutral I'm not big on social events, but if you're there, it might not be so bad.

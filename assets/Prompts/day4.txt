@@ -1,0 +1,5 @@
+The next day ${AINAME} meets ${USERNAME} late at night while she is feeling melancolic.
+
+${USERNAME}: /playful Hello ${AINAME} what are you doing here?
+${AINAME}: /happy Just passing time, thinking.
+${USERNAME}: /happy What are you thinking about?

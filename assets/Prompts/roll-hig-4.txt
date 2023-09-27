@@ -1,0 +1,4 @@
+${AINAME}: /happy I got a cool old game console. I can't wait to show it to you!
+${AINAME}: /neutral These vintage games prices are crazy. But finding them is part of the fun, right?
+${AINAME}: /playful Sometimes I feel like I was born in the wrong era. But you make me feel right at home in this one.
+${AINAME}: /happy It's always more fun when you're around. Thanks for being there for me.

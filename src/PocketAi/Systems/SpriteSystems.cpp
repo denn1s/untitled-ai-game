@@ -33,7 +33,7 @@ void UiSetupSystem::run() {
 
 void UiUpdateSystem::run(double dT) {
     auto& uiSpriteComponent = scene->world->get<SpriteComponent>();
-    int affection = scene->player->get<PlayerEmotionComponent>().affection;
+    const auto& affection = scene->r.ctx().get<AffectionComponent>().affection;
 
     uiSpriteComponent.xIndex = static_cast<int>(affection / 16);
 }

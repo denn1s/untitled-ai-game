@@ -7,6 +7,10 @@
 #include "ECS/Components.h"
 #include "PocketAi/Components.h"
 
+CharacterSetupSystem::~CharacterSetupSystem() {
+    delete scene->player;
+    scene->player = nullptr;
+}
 
 void CharacterSetupSystem::run() {
     if (scene->player == nullptr) {
@@ -16,7 +20,7 @@ void CharacterSetupSystem::run() {
         scene->player->addComponent<PlayerTextComponent>();
         scene->player->addComponent<PlayerEmotionComponent>();
         scene->player->addComponent<PlayerPromptComponent>("Pocket: ", "Rob: ");
-        scene->player->addComponent<ConversationComponent>(2, 0);
+        scene->player->addComponent<ConversationComponent>(5, 0, 100);
     }
 }
 
@@ -43,3 +47,9 @@ void PressStartEventSystem::run(SDL_Event event) {
         changeScene();
     }
 }
+
+void AffectionSetupSystem::run() {
+    auto& registry = scene->r;
+    registry.ctx().emplace<AffectionComponent>(60);
+}
+

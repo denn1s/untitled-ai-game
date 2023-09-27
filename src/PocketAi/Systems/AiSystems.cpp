@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <random>
 #include <print.h>
+#include <string>
 
 #include "ECS/Components.h"
 #include "PocketAi/Components.h"
@@ -23,12 +24,23 @@ void AiPromptProcessingSystem::run(double dT) {
 }
 
 void AiPromptPostProcessingSystem::run(double dT) {
+  Uint32 now = SDL_GetTicks();  
+  auto& conversationComponent = scene->player->get<ConversationComponent>();
+
+  if (conversationComponent.lastLetterTime == 0) {
+    conversationComponent.lastLetterTime = now;
+  } else if (now - conversationComponent.lastLetterTime < conversationComponent.minLetterTime) {
+    // we delay a bit so letters dont show too fast
+    return;
+  } else {
+    conversationComponent.lastLetterTime = now;
+  }
+
   std::string output;
   if (AiManager::responseQueue.try_pop(output)) {
     auto& textComponent = scene->player->get<PlayerTextComponent>();
     auto& promptComponent = scene->player->get<PlayerPromptComponent>();
     auto& emotionComponent = scene->player->get<PlayerEmotionComponent>();
-    auto& conversationComponent = scene->player->get<ConversationComponent>();
 
     if (emotionComponent.isProcessingEmotion) {
       if (output == " ") {  // we are at the end of an emotion
@@ -65,6 +77,7 @@ std::unordered_map<std::string, int> emotionMap {
 void AiEmotionProcessingSystem::run(double dT) {
   auto& emotionComponent = scene->player->get<PlayerEmotionComponent>();
   auto& playerSpriteComponent = scene->player->get<SpriteComponent>();
+  auto& affection = scene->r.ctx().get<AffectionComponent>().affection;
 
   int value = (emotionMap.find(emotionComponent.emotion) != emotionMap.end()) ? emotionMap[emotionComponent.emotion] : -1;
 
@@ -80,38 +93,49 @@ void AiEmotionProcessingSystem::run(double dT) {
     emotionComponent.emotion = "";
 
     if (value == 0) {
-      emotionComponent.affection += 5;
+      affection += 15;
     } else if (value == 1) {
-      emotionComponent.affection += 7;
+      affection += 17;
     } else if (value == 2) {
-      emotionComponent.affection += 10;
+      affection += 20;
     } else if (value == 3) {
-      emotionComponent.affection -= 5;
+      affection -= 5;
     } else if (value == 4) {
-      emotionComponent.affection -= 10;
+      affection -= 10;
     } else if (value == 5) {
-      emotionComponent.affection -= 15;
+      affection -= 15;
     }
 
-    emotionComponent.affection = std::clamp(emotionComponent.affection, 0, 99);
+    affection = std::clamp(affection, 0, 99);
 
-    vprint(emotionComponent.affection);
+    vprint(affection);
   }
 }
 
-AiConversationProgressSystem::AiConversationProgressSystem(std::function<void()> changeScene)
-  : changeScene(changeScene) { }
+AiConversationProgressSystem::AiConversationProgressSystem(std::function<void()> changeScene, int day)
+  : changeScene(changeScene), day(day) { }
 
 void AiConversationProgressSystem::run(double dT) {
   auto& conversationComponent = scene->player->get<ConversationComponent>();
   auto& playerPromptComponent = scene->player->get<PlayerPromptComponent>();
+  const auto affection = scene->r.ctx().get<AffectionComponent>().affection;
 
-  if (playerPromptComponent.isInteracting && conversationComponent.countConversations == conversationComponent.maxConversations) {
-    /* AiManager::requestQueue.push("/neutral *bells sound* looks like its time for class. See you later! "); */
-    AiManager::responseQueue.push("(You hear the bells ring)\n");
-    AiManager::responseQueue.push("\nPocket: Anyways. Looks like its time for class. See you later!\n");
+  if (playerPromptComponent.isInteracting && conversationComponent.countConversations > conversationComponent.maxConversations) {
+    /* AiManager::responseQueue.push("(You hear the bells ring)\n"); */
+    /* AiManager::responseQueue.push("\nPocket: Anyways. Looks like its time for class. See you later!\n"); */
     playerPromptComponent.isInteracting = false;      
-    /* changeScene(); // but after we fade out? */ 
+    SDL_Delay(3000);
+    changeScene(); // but after we fade out? 
+    /* print("we must retrain using", "day" + std::to_string(day + 1) + ".txt"); */
+    AiManager::retrain("day" + std::to_string(day + 1) + ".txt");
+
+/*     if (affection < 20) { */
+/*       AiManager::retrain("roll-low-" + std::to_string(day) + ".txt"); */
+/*     } else if (affection < 60) { */
+/*       AiManager::retrain("roll-mid-" + std::to_string(day) + ".txt"); */
+/*     } else { */
+/*       AiManager::retrain("roll-hig-" + std::to_string(day) + ".txt"); */
+/*     } */
   }
 }
 

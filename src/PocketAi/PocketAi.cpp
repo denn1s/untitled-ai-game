@@ -44,25 +44,28 @@ void PocketAi::setup() {
   Scene* contextScene1 = createContextScene(1);
   Scene* gameplayScene1 = createGameplayScene(1);
   Scene* contextScene2 = createContextScene(2);
+  Scene* gameplayScene2 = createGameplayScene(2);
   Scene* contextScene3 = createContextScene(3);
+  Scene* gameplayScene3 = createGameplayScene(3);
   Scene* contextScene4 = createContextScene(4);
+  Scene* gameplayScene4 = createGameplayScene(4);
   Scene* contextScene5 = createContextScene(5);
+
 
   // this is the scene queue, we push the scenes in order
   setScene(logoScene);
-  /* scenes.push(creditsScene); */ 
-  /* scenes.push(jamScene); */ 
-  /* scenes.push(titleScene); */ 
-  /* scenes.push(contextScene1); */
-  /* scenes.push(contextScene1); */
+  scenes.push(creditsScene); 
+  scenes.push(jamScene); 
+  scenes.push(titleScene); 
+  scenes.push(contextScene1);
   scenes.push(gameplayScene1);
-  /* scenes.push(contextScene2); */
-  /* scenes.push(contextScene3); */
-  /* scenes.push(contextScene4); */
-  /* scenes.push(contextScene5); */
-
-  /* setScene(gameplayScene1); */
-  
+  scenes.push(contextScene2);
+  scenes.push(gameplayScene2);
+  scenes.push(contextScene3);
+  scenes.push(gameplayScene3);
+  scenes.push(contextScene4);
+  scenes.push(gameplayScene4);
+  scenes.push(contextScene5);
 }
 
 Scene* PocketAi::createCreditsScene() {
@@ -71,7 +74,7 @@ Scene* PocketAi::createCreditsScene() {
         "Backgrounds/credits.png",
         160, 144
   };
-  addSetupSystem<SlideShowSetupSystem>(scene, sprite, 5, 4000);
+  addSetupSystem<SlideShowSetupSystem>(scene, sprite, 3, 2000);
   addSetupSystem<SpriteSetupSystem>(scene, renderer);
   addUpdateSystem<SlideShowUpdateSystem>(scene);
   addRenderSystem<SpriteRenderSystem>(scene);
@@ -89,6 +92,7 @@ Scene* PocketAi::createLogoScene() {
   
   // we must add the ai setup system from the start since it takes so long
   addSetupSystem<AiSetupSystem>(scene);
+  addSetupSystem<AffectionSetupSystem>(scene);
   
   SpriteComponent sprite = {
         "Backgrounds/gamedev.png",
@@ -237,7 +241,8 @@ Scene* PocketAi::createGameplayScene(int day) {
   addRenderSystem<PlayerCursorRenderSystem>(scene);
   addUpdateSystem<AiConversationProgressSystem>(
     scene,
-    std::bind(&PocketAi::sceneTransition, this)
+    std::bind(&PocketAi::sceneTransition, this),
+    day
   );
   
 

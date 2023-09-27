@@ -1,6 +1,7 @@
 #pragma once
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL_stdinc.h>
 
 #include "ECS/Components.h"
 #include "Game/Graphics/Texture.h"
@@ -22,7 +23,6 @@ struct PlayerPromptComponent {
 
 struct PlayerEmotionComponent {
   std::string emotion;
-  int affection = 40;
   bool isProcessingEmotion = false;
 };
 
@@ -36,7 +36,14 @@ struct SlideShowComponent {
 struct ConversationComponent {
   int maxConversations;
   int countConversations;
+  Uint32 minLetterTime = 0;
+  Uint32 lastLetterTime = 0;
 };
+
+struct AffectionComponent {
+  int affection = 60;
+};
+
 
 
 /*

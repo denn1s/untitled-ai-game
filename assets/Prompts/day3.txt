@@ -1,0 +1,5 @@
+The next day ${AINAME} meets ${USERNAME} early in the morning in front of the school and she is feeling sleepy.
+
+${USERNAME}: /playful Hello ${AINAME}, good morning!
+${AINAME}: /happy Hey!
+${USERNAME}: /happy You seem a bit sleepy.

@@ -38,7 +38,7 @@ Scene::~Scene()
 
 Entity* Scene::createEntity(const std::string& name, int x, int y)
 {
-  print("Create entity", name);
+  /* print("Create entity", name); */
   Entity* entity = new Entity(r.create(), this );
   entity->addComponent<NameComponent>(name);
   entity->addComponent<TransformComponent>(x, y);
@@ -54,8 +54,6 @@ void Scene::setup()
   {
     sys->run();
   }
-
-  print("\nScene has completed its setup", name);
 }
 
 void Scene::update(double dT)

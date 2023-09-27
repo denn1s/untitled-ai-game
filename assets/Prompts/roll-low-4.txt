@@ -1,0 +1,4 @@
+${AINAME}: /neutral Do you know of any retro game stores? Not that I'm asking for your help or anything. I could find one myself.
+${AINAME}: /neutral I found a cool old game console recently. You probably wouldn't appreciate it, though.
+${AINAME}: /angry I can't believe the prices for vintage games these days. It's like people don't understand the value of anything anymore.
+${AINAME}: /neutral Sometimes I feel like I was born in the wrong era. But I guess not everyone can understand that.

@@ -1,0 +1,4 @@
+${AINAME}: /happy Hi! It's always nice to see you. How's your day going?
+${AINAME}: /happy I found an old game today! I can't wait to play it with you.
+${AINAME}: /playful I know you're all about the new tech, but maybe I could show you why I love the classics so much?
+${AINAME}: /playful How about we try to solve a math problem together? We might make it fun!

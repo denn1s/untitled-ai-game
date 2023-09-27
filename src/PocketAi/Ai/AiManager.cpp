@@ -56,6 +56,20 @@ void AiManager::run() {
   }
 }
 
+void AiManager::retrain(const std::string promptFile) {
+  /* print("retrain with", promptFile); */
+  if (model != nullptr && model->isInitialized) {
+    taskGroup.wait();
+    taskGroup.run([promptFile] { 
+      // we process user input first, this consumes one item 
+      model->retrain(promptFile); 
+
+      // we wont take a sample for now
+      model->sample();
+    });
+  }
+}
+
 void AiManager::tearDown() {
   taskGroup.wait();
 }

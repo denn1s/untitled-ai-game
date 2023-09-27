@@ -2,6 +2,7 @@
 #include "PocketAi/Ai/AiManager.h"
 #include "log.h"
 #include "build-info.h"
+#include <SDL_timer.h>
 #include <print.h>
 #include <iostream>
 #include <fstream>
@@ -35,7 +36,7 @@ Llama::Llama(
   isInitialized = false;
   params.model = "assets/Models/" + modelFile;
   params.n_ctx = 4096;
-  params.n_predict = 256;
+  params.n_predict = 128;
   params.n_batch = 1024;
   params.n_threads = 14;
   params.n_keep = -1;
@@ -200,10 +201,12 @@ void Llama::sample() {
  
       if (!params.antiprompt.empty()) {
         // tokenize and inject first reverse prompt
-        const auto string_antiprompt = "\n" + params.antiprompt.front() + " ";
+        const auto string_antiprompt = "\n" + params.antiprompt.front();
         const auto first_antiprompt = ::llama_tokenize(ctx, string_antiprompt, false);
         tokens_list.insert(tokens_list.end(), first_antiprompt.begin(), first_antiprompt.end());
-        AiManager::responseQueue.push(string_antiprompt);
+
+        fprintf(stderr, "Pushing antiprompt to to responseQueue '%s'\n", string_antiprompt.c_str());
+        AiManager::responseQueue.push(" ..." + string_antiprompt);
         break;
       } 
     }
@@ -214,7 +217,18 @@ void Llama::sample() {
 }
 
 void Llama::retrain(const std::string& promptFile) {
-  // TODO
+  std::string prompt = readFromFile("assets/Prompts/" + promptFile);
+  prompt = std::regex_replace(prompt, std::regex("\\$\\{USERNAME\\}"), username.substr(0, username.size() - 1));
+  prompt = std::regex_replace(prompt, std::regex("\\$\\{AINAME\\}"), ainame.substr(0, ainame.size() - 1));
+  n_remain = params.n_predict;
+  /* n_past = 0; */
+  /* n_consumed = 0; */
+
+  is_antiprompt = false;
+  input_echo = true;
+
+  print("This is the new prompt '", prompt, "'");
+  process(prompt);
 }
 
 // PRIVATE METHODS
@@ -244,7 +258,7 @@ bool Llama::evaluateTokensInBatches() {
     if (n_eval > params.n_batch) {
       n_eval = params.n_batch;
     }
-
+    
     if (llama_eval(ctx, &embd[i], n_eval, n_past, params.n_threads)) {
       fprintf(stderr, "%s : failed to eval\n", __func__);
       return false;
@@ -274,17 +288,19 @@ void Llama::addTokensToProcess() {
     // decrement remaining sampling budget
     --n_remain;
   } else {
+    int new_tokens = 0;
     // some user input remains from prompt or interaction, forward it to processing
     while ((int) tokens_list.size() > n_consumed) {
       embd.push_back(tokens_list[n_consumed]);
       last_tokens.erase(last_tokens.begin());
       last_tokens.push_back(tokens_list[n_consumed]);
       ++n_consumed;
+      new_tokens++;
       if ((int) embd.size() >= params.n_batch) {
         break;
       }
     }
-    fprintf(stderr, "Added %d tokens for processing\n", n_consumed);
+    fprintf(stderr, "Added %d tokens for processing\n", new_tokens);
   }
 }
 

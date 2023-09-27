@@ -24,6 +24,7 @@ public:
     const std::string& modelFile = ""
   );
   static void run();
+  static void retrain(const std::string promptFile);
   static void tearDown();
   static bool endsWithAntiPrompt(const std::string& str);
 private:
