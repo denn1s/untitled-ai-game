@@ -8,11 +8,14 @@
 
 class UiSetupSystem : public SetupSystem {
 public:
-  UiSetupSystem(SDL_Renderer* renderer);
+  UiSetupSystem(SDL_Renderer* renderer, std::string spriteFile, int day = 0);
+  ~UiSetupSystem();
   void run() override;
   
 private:
   SDL_Renderer* renderer;
+  std::string spriteFile;
+  int day;
 };
 
 class UiUpdateSystem : public UpdateSystem {
@@ -22,7 +25,13 @@ public:
 
 class BackgroundSetupSystem : public SetupSystem {
 public:
+  BackgroundSetupSystem(int day = 0);
+  ~BackgroundSetupSystem();
   void run() override;
+
+private:
+  int day;
+  Entity* bg;
 };
 
 class SpriteRenderSystem : public RenderSystem {
@@ -48,7 +57,7 @@ public:
 
 class SlideShowSetupSystem : public SetupSystem {
 public:
-  SlideShowSetupSystem(SpriteComponent sprite, short slideCount, int slideDurationMillis);
+  SlideShowSetupSystem(SpriteComponent sprite, short slideCount = 0, int slideDurationMillis = -1);
   ~SlideShowSetupSystem();
   void run() override;
 

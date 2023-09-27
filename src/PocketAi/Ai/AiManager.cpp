@@ -42,7 +42,7 @@ void AiManager::setUp(
 }
 
 void AiManager::run() {
-  if (model->isInitialized) {
+  if (model != nullptr && model->isInitialized) {
     std::string prompt;
     if (requestQueue.try_pop(prompt)) {
       taskGroup.run([prompt] { 

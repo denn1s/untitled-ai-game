@@ -7,6 +7,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <deque>
+#include <functional>
 
 #include "ECS/Entity.h"
 #include "ECS/Components.h"
@@ -22,6 +23,10 @@ void PlayerTextSetupSystem::run() {
     if (!font) {
         print("Failed to load font: %s\n", TTF_GetError());
         exit(1);
+    }
+
+    if (scene->player == nullptr) {
+        scene->player = new Entity(scene->r.create(), scene);
     }
 
     auto& p = scene->player->get<PlayerTextComponent>();
@@ -60,26 +65,6 @@ void PlayerTextInputSystem::run(SDL_Event event) {
         }
     }
 }
-
-static int count =  0;
-
-void SampleRenderSystem::run(SDL_Renderer* r) {
-    const auto playerTextComponent = scene->player->get<PlayerTextComponent>();
-
-    const std::string text = "HELLO WORLD:";
-
-    SDL_Surface* textSurface = TTF_RenderText_Solid(playerTextComponent.font, text.c_str(), {255, 0, 0});
-    
-    SDL_Texture* textTexture = SDL_CreateTextureFromSurface(r, textSurface);
-    SDL_Rect position;
-    position.x = 0;
-    position.y = 0;
-    position.w = textSurface->w;
-    position.h = textSurface->h;
-
-    SDL_RenderCopy(r, textTexture, NULL, &position);
-}
-
 
 void renderLine(SDL_Renderer* renderer, TTF_Font* font, const std::string& line, SDL_Rect& position) {
     SDL_Surface* textSurface = TTF_RenderText_Solid(font, line.c_str(), {226, 246, 228});
@@ -197,4 +182,35 @@ void PlayerCursorRenderSystem::run(SDL_Renderer* renderer) {
         SDL_RenderFillRect(renderer, &r);
     }
 }
- 
+
+TextCrawlUpdateSystem::TextCrawlUpdateSystem(const std::string& text, int lettersPerSecond)
+    : text(text), frameCount(0) {
+    framesPerLetter = 60 / lettersPerSecond;
+}
+
+void TextCrawlUpdateSystem::run(double dT) {
+    auto& playerTextComponent = scene->player->get<PlayerTextComponent>();
+
+    if (playerTextComponent.text.size() < text.size() && ++frameCount >= framesPerLetter) {
+      if (playerTextComponent.text.size() < text.size()) {
+        playerTextComponent.text += text[playerTextComponent.text.size()];
+      }
+      frameCount = 0;
+    }
+}
+
+TextCrawlEventSystem::TextCrawlEventSystem(const std::string& text, std::function<void()> changeScene)
+    : text(text), changeScene(changeScene) { }
+
+void TextCrawlEventSystem::run(SDL_Event event) {
+    auto& playerTextComponent = scene->player->get<PlayerTextComponent>();
+
+    if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_RETURN) {
+        if (playerTextComponent.text.size() < text.size()) {
+            playerTextComponent.text = text;
+        } else {
+            print("next scene!");
+            changeScene();
+        }
+    }
+}

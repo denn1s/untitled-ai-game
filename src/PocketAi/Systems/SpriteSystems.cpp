@@ -13,15 +13,23 @@
 
 #include "PocketAi/Components.h"
 
-UiSetupSystem::UiSetupSystem(SDL_Renderer* renderer)
-    : renderer(renderer) { }
+UiSetupSystem::UiSetupSystem(SDL_Renderer* renderer, std::string spriteFile, int day)
+    : renderer(renderer), spriteFile(spriteFile), day(day) { }
+
+UiSetupSystem::~UiSetupSystem() {
+    scene->world->removeComponent<SpriteComponent>();
+}
 
 void UiSetupSystem::run() {
-    TextureManager::LoadTexture("UI/main.png", renderer);
-    scene->world = new Entity(scene->r.create(), scene);
+    /* TextureManager::LoadTexture(spriteFile, renderer); */
+    if (scene->world == nullptr) {
+        scene->world = new Entity(scene->r.create(), scene);
+    }
     scene->world->addComponent<TransformComponent>(0, 0);
-    scene->world->addComponent<SpriteComponent>("UI/main.png", 160, 144, 0, 0);
+    scene->world->addComponent<SpriteComponent>(spriteFile, 160, 144, day, 0);
 }
+
+
 
 void UiUpdateSystem::run(double dT) {
     auto& uiSpriteComponent = scene->world->get<SpriteComponent>();
@@ -30,12 +38,19 @@ void UiUpdateSystem::run(double dT) {
     uiSpriteComponent.xIndex = static_cast<int>(affection / 16);
 }
 
+BackgroundSetupSystem::BackgroundSetupSystem(int day)
+    : day(day) { }
+
+BackgroundSetupSystem::~BackgroundSetupSystem() {
+    delete bg;
+}
+
 void BackgroundSetupSystem::run() {
-    Entity* bg = scene->createEntity("BG", 0, 24 * SCALE);
+    bg = scene->createEntity("BG", 0, 24 * SCALE);
     bg->addComponent<SpriteComponent>(
         "Backgrounds/starry-sky.png",
          160, 65,
-         0,  2,
+         0,  (day + 1) % 4,
          8,
          2000
     );
@@ -94,7 +109,7 @@ void SpriteRenderSystem::run(SDL_Renderer* renderer) {
             width,
             height,
         };
-
+        
         texture->render(
             transformComponent.x,
             transformComponent.y,
@@ -151,7 +166,7 @@ void SpriteUpdateSystem::run(double dT) {
                     timeSinceLastUpdate = 0;
                 }
             }
-            
+
             int framesToUpdate = static_cast<int>(
                 timeSinceLastUpdate / 
                 spriteComponent.animationDuration * spriteComponent.animationFrames

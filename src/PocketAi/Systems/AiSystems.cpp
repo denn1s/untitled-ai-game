@@ -1,5 +1,6 @@
 #include "AiSystems.h"
 
+#include <SDL_timer.h>
 #include <algorithm>
 #include <random>
 #include <print.h>
@@ -9,12 +10,12 @@
 #include "PocketAi/Ai/AiManager.h"
 
 AiSetupSystem::~AiSetupSystem() {
-  AiManager::tearDown();
+  /* AiManager::tearDown(); */
 }
 
 void AiSetupSystem::run() {
-  /* AiManager::setUp( "Rob:", "Pocket:", "initial.txt", "model" ); */
-  AiManager::setUp( "Rob:", "Pocket:", "baka-high.txt");
+  AiManager::setUp( "Rob:", "Pocket:", "initial.txt", "model" );
+  /* AiManager::setUp( "Rob:", "Pocket:", "baka-high.txt"); */
 }
 
 void AiPromptProcessingSystem::run(double dT) {
@@ -68,10 +69,10 @@ void AiEmotionProcessingSystem::run(double dT) {
   if (value != -1) {
     playerSpriteComponent.xIndex = value;
     
-    std::mt19937 mt{static_cast<std::mt19937::result_type>(dT)};
-    std::uniform_real_distribution<double> dist(0, 1);
-    double random_number = dist(mt);
-    playerSpriteComponent.yIndex = random_number < 0.2 ? 1 : random_number < 0.6 ? 0 : 2;
+    std::mt19937 mt{static_cast<std::mt19937::result_type>(SDL_GetTicks())};
+    std::uniform_int_distribution<int> dist(0, 4);
+    int random_number = dist(mt);
+    playerSpriteComponent.yIndex = std::clamp(random_number, 1, 3) - 1;
     
     vprint(emotionComponent.emotion);
     emotionComponent.emotion = "";

@@ -12,6 +12,9 @@
 Scene::Scene(const std::string& name, entt::registry& r)
   : name(name), r(r)
 {
+  world = nullptr;
+  mainCamera = nullptr;
+  player = nullptr;
   /*
   world = new Entity(r.create(), this);
   world->addComponent<TilemapComponent>();
@@ -45,12 +48,14 @@ Entity* Scene::createEntity(const std::string& name, int x, int y)
 
 void Scene::setup()
 {
-  // print("Scene Setup");
+  print("Scene Setup", name);
   
   for (auto sys: setupSystems)
   {
     sys->run();
   }
+
+  print("\nScene has completed its setup", name);
 }
 
 void Scene::update(double dT)

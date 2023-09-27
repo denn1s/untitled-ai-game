@@ -19,3 +19,11 @@ private:
   std::function<void()> changeScene;
 };
 
+class PressStartEventSystem : public EventSystem {
+public:
+  PressStartEventSystem(std::function<void()> changeScene);
+  void run(SDL_Event event) override;
+private:
+  std::function<void()> changeScene;
+};
+

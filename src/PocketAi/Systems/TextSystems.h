@@ -35,4 +35,25 @@ public:
   void run(SDL_Renderer* renderer);
 };
 
+class TextCrawlUpdateSystem : public UpdateSystem {
+public:
+  TextCrawlUpdateSystem(const std::string& text, int lettersPerSecond);
+  void run(double dT);
+
+private:
+  std::string text;
+  int framesPerLetter;
+  int frameCount;
+};
+
+class TextCrawlEventSystem : public EventSystem {
+public:
+  TextCrawlEventSystem(const std::string& text, std::function<void()> changeScene);
+  void run(SDL_Event event);
+
+private:
+  std::string text;
+  std::function<void()> changeScene;
+};
+
 

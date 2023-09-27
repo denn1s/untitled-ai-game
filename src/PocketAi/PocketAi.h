@@ -16,5 +16,8 @@ class PocketAi : public Game {
     std::queue<Scene*> scenes;
     Scene* createLogoScene();
     Scene* createCreditsScene();
-    Scene* createGameplayScene();
+    Scene* createJamScene();
+    Scene* createTitleScene();
+    Scene* createContextScene(int day);
+    Scene* createGameplayScene(int day);
 };
