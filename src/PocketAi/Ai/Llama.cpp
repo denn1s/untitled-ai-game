@@ -35,7 +35,7 @@ Llama::Llama(
   isInitialized = false;
   params.model = "assets/Models/" + modelFile;
   params.n_ctx = 4096;
-  params.n_predict = 4096;
+  params.n_predict = 256;
   params.n_batch = 1024;
   params.n_threads = 14;
   params.n_keep = -1;
@@ -197,7 +197,15 @@ void Llama::sample() {
     if (params.interactive && n_remain <= 0 && params.n_predict >= 0) {
       n_remain = params.n_predict;
       fprintf(stderr, "We reached the max number of tokens %d\n", n_remain);
-      break;
+ 
+      if (!params.antiprompt.empty()) {
+        // tokenize and inject first reverse prompt
+        const auto string_antiprompt = "\n" + params.antiprompt.front() + " ";
+        const auto first_antiprompt = ::llama_tokenize(ctx, string_antiprompt, false);
+        tokens_list.insert(tokens_list.end(), first_antiprompt.begin(), first_antiprompt.end());
+        AiManager::responseQueue.push(string_antiprompt);
+        break;
+      } 
     }
   }
   /* print(">>>", output_ss.str()); */

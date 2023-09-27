@@ -28,6 +28,7 @@ void AiPromptPostProcessingSystem::run(double dT) {
     auto& textComponent = scene->player->get<PlayerTextComponent>();
     auto& promptComponent = scene->player->get<PlayerPromptComponent>();
     auto& emotionComponent = scene->player->get<PlayerEmotionComponent>();
+    auto& conversationComponent = scene->player->get<ConversationComponent>();
 
     if (emotionComponent.isProcessingEmotion) {
       if (output == " ") {  // we are at the end of an emotion
@@ -43,6 +44,7 @@ void AiPromptPostProcessingSystem::run(double dT) {
 
         // we check if there is an antiprompt at the end of the prompt.
         if (AiManager::endsWithAntiPrompt(textComponent.text)) {
+          conversationComponent.countConversations++;
           promptComponent.isInteracting = true; 
           promptComponent.currentPrompt = textComponent.text;
         }
@@ -96,4 +98,23 @@ void AiEmotionProcessingSystem::run(double dT) {
     vprint(emotionComponent.affection);
   }
 }
+
+AiConversationProgressSystem::AiConversationProgressSystem(std::function<void()> changeScene)
+  : changeScene(changeScene) { }
+
+void AiConversationProgressSystem::run(double dT) {
+  auto& conversationComponent = scene->player->get<ConversationComponent>();
+  auto& playerPromptComponent = scene->player->get<PlayerPromptComponent>();
+
+  if (playerPromptComponent.isInteracting && conversationComponent.countConversations == conversationComponent.maxConversations) {
+    /* AiManager::requestQueue.push("/neutral *bells sound* looks like its time for class. See you later! "); */
+    AiManager::responseQueue.push("(You hear the bells ring)\n");
+    AiManager::responseQueue.push("\nPocket: Anyways. Looks like its time for class. See you later!\n");
+    playerPromptComponent.isInteracting = false;      
+    /* changeScene(); // but after we fade out? */ 
+  }
+}
+
+
+
 

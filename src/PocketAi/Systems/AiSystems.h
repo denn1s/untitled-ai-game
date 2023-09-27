@@ -2,6 +2,8 @@
 
 #include "ECS/System.h"
 
+#include <functional>
+
 class AiSetupSystem : public SetupSystem {
 public:
   ~AiSetupSystem();
@@ -22,5 +24,14 @@ class AiEmotionProcessingSystem : public UpdateSystem {
 public:
   void run(double dT);
 };
+
+class AiConversationProgressSystem : public UpdateSystem {
+public:
+  AiConversationProgressSystem(std::function<void()> changeScene);
+  void run(double dT);
+private:
+  std::function<void()> changeScene; 
+};
+
 
 

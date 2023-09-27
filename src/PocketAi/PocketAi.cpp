@@ -235,6 +235,10 @@ Scene* PocketAi::createGameplayScene(int day) {
   addSetupSystem<PlayerTextSetupSystem>(scene);
   addRenderSystem<PlayerTextRenderSystem>(scene);
   addRenderSystem<PlayerCursorRenderSystem>(scene);
+  addUpdateSystem<AiConversationProgressSystem>(
+    scene,
+    std::bind(&PocketAi::sceneTransition, this)
+  );
   
 
   return scene;

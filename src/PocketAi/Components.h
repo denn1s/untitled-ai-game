@@ -33,6 +33,12 @@ struct SlideShowComponent {
   short currentSlide = 0;
 };
 
+struct ConversationComponent {
+  int maxConversations;
+  int countConversations;
+};
+
+
 /*
 struct FadeComponent {
   SDL_Color fadeColor;
