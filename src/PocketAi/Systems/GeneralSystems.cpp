@@ -7,6 +7,8 @@
 #include "ECS/Components.h"
 #include "PocketAi/Components.h"
 
+#include "PocketAi/Audio/AudioManager.h"
+
 CharacterSetupSystem::~CharacterSetupSystem() {
     delete scene->player;
     scene->player = nullptr;
@@ -57,4 +59,16 @@ ConversationSetupSystem::ConversationSetupSystem(int maxLines)
 void ConversationSetupSystem::run() {
     scene->player->addComponent<ConversationComponent>(maxLines, 0, 100);
 }
+
+void MusicSetupSystem::run() {
+    AudioManager::Init();
+};
+
+MusicPlaySystem::MusicPlaySystem(const std::string& song)
+    : song(song) { }
+
+void MusicPlaySystem::run() {
+    AudioManager::PlaySong(song);
+}
+
 

@@ -45,6 +45,9 @@ include_directories(${GLM_INCLUDE_DIRS})
 
 find_package(TBB REQUIRED)
 
+include_directories("/usr/include/fmod/")
+set(FMOD_LIBRARIES "/usr/lib/libfmod.so")
+
 # link libraries
 target_link_libraries(${PROJECT_NAME}
   ${SDL2_LIBRARIES}
@@ -54,4 +57,5 @@ target_link_libraries(${PROJECT_NAME}
   common
   llama
   TBB::tbb
+  ${FMOD_LIBRARIES}
 )

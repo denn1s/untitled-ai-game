@@ -43,3 +43,17 @@ private:
   int maxLines;
 };
 
+class MusicSetupSystem : public SetupSystem {
+public:
+  void run() override;
+};
+
+class MusicPlaySystem : public SetupSystem {
+public:
+  MusicPlaySystem(const std::string& song);
+  void run() override;
+private:
+  std::string song;
+};
+
+

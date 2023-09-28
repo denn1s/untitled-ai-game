@@ -98,6 +98,7 @@ Scene* PocketAi::createLogoScene() {
   // we must add the ai setup system from the start since it takes so long
   addSetupSystem<AiSetupSystem>(scene);
   addSetupSystem<AffectionSetupSystem>(scene);
+  addSetupSystem<MusicSetupSystem>(scene);
   
   SpriteComponent sprite = {
         "Backgrounds/gamedev.png",
@@ -161,6 +162,7 @@ Scene* PocketAi::createTitleScene() {
         false,
         3000
   };
+  addSetupSystem<MusicPlaySystem>(scene, "Music/daydreamers_intro.wav");
   addSetupSystem<SlideShowSetupSystem>(scene, sprite);
   addSetupSystem<SpriteSetupSystem>(scene, renderer);
   addUpdateSystem<SpriteUpdateSystem>(scene);
@@ -178,7 +180,15 @@ Scene* PocketAi::createTitleScene() {
 
 Scene* PocketAi::createContextScene(int day) {
   Scene* scene = new Scene("CONTEXT SCENE " + std::to_string(day), r);
-  
+
+  if (day == 1) {
+    /* addSetupSystem<MusicPlaySystem>(scene, "Music/daydreamers_intro.wav"); */
+    addSetupSystem<MusicPlaySystem>(scene, "Music/daydreamers_full.wav");
+  }
+  /* if (day == 3) { */
+    /* addSetupSystem<MusicPlaySystem>(scene, "Music/daydreamers_full.wav"); */
+  /* } */
+
   // sprite / ui systems
   addSetupSystem<UiSetupSystem>(scene, renderer, "UI/simple.png", day);
   addRenderSystem<SpriteRenderSystem>(scene);
