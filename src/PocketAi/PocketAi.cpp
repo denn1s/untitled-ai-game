@@ -238,6 +238,8 @@ Scene* PocketAi::createGameplayScene(int day) {
   addSetupSystem<SpriteSetupSystem>(scene, renderer);
   addUpdateSystem<SpriteUpdateSystem>(scene);
   addRenderSystem<SpriteRenderSystem>(scene);
+  addSetupSystem<BlushSetupSystem>(scene, renderer);
+  addRenderSystem<BlushRenderSystem>(scene);
 
   // ai systems
   /* addSetupSystem<AiSetupSystem>(scene); */
@@ -275,7 +277,7 @@ Scene* PocketAi::createConclusionScene(bool isResponse) {
   addSetupSystem<PlayerTextSetupSystem>(
     scene,
     25, 94,
-    22, 7, 
+    22, 6, 
     SDL_Color{ 51, 44, 80 }
   );
   addRenderSystem<PlayerTextRenderSystem>(scene);

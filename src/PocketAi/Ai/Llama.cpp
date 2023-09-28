@@ -207,6 +207,7 @@ void Llama::sample() {
 
         fprintf(stderr, "Pushing antiprompt to to responseQueue '%s'\n", string_antiprompt.c_str());
         AiManager::responseQueue.push(" ..." + string_antiprompt);
+        is_antiprompt = true;
         break;
       } 
     }

@@ -57,7 +57,7 @@ ConversationSetupSystem::ConversationSetupSystem(int maxLines)
     : maxLines(maxLines) { }
 
 void ConversationSetupSystem::run() {
-    scene->player->addComponent<ConversationComponent>(maxLines, 0, 100);
+    scene->player->addComponent<ConversationComponent>(maxLines, 0, 50);
 }
 
 void MusicSetupSystem::run() {

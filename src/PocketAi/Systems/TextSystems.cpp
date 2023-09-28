@@ -73,14 +73,17 @@ void PlayerTextInputSystem::run(SDL_Event event) {
                 AiManager::requestQueue.push("/neutral " + prompt);  // slight hack to make her used to answering with emotions
             }
             /* playerTextComponent.text.clear(); */
-       } else if (event.key.keysym.sym == SDLK_ESCAPE) {
-            // small hack to unstuck the systems
-            playerTextComponent.text += "\n";
-            std::string prompt = "\nSorry, can you repeat that?";
-            playerPromptComponent.isInteracting = true;  // this actually should be false, but since this is a safeguard      
-            AiManager::requestQueue.push("Rob: /confused " + prompt);  // slight hack to make her used to answering with emotions
         }
     }
+    if (event.key.keysym.sym == SDLK_ESCAPE) {
+        // small hack to unstuck the systems
+        print("trying to unstuck");
+        playerTextComponent.text += "\n";
+        std::string prompt = "\nSorry, can you repeat that?";
+        playerPromptComponent.isInteracting = true;  // this actually should be false, but since this is a safeguard      
+        AiManager::requestQueue.push("Rob: /confused " + prompt);  // slight hack to make her used to answering with emotions
+    }
+
 }
 
 void renderLine(SDL_Renderer* renderer, TTF_Font* font, const std::string& line, SDL_Rect& position, SDL_Color color) {

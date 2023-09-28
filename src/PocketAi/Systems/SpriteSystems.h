@@ -73,3 +73,17 @@ public:
   void run(double dT) override;
 };
 
+class BlushSetupSystem : public SetupSystem {
+public:
+  BlushSetupSystem(SDL_Renderer* renderer);
+  void run() override;
+private:
+  SDL_Renderer* renderer;
+};
+
+class BlushRenderSystem : public RenderSystem {
+public:
+  void run(SDL_Renderer* renderer) override;
+};
+
+

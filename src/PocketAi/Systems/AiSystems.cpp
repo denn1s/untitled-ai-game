@@ -152,11 +152,11 @@ void AiEndingSetupSystem::run() {
   print("affection at ending is", affection);
   int ending = 0;  // 0: bad end, 1: normal end, 2: good end
   if (affection < 20) {
-    ending = 0; 
+    ending = 2; 
   } else if (affection < 80) {
     ending = 1;
   } else {
-    ending = 2;
+    ending = 0;
   }
 
   for(auto entity : view) {

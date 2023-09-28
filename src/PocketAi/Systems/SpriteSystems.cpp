@@ -206,4 +206,39 @@ void UiUpdateSystem::run(double dT) {
 }
 */
 
+BlushSetupSystem::BlushSetupSystem(SDL_Renderer* renderer)
+    : renderer(renderer) { }
+
+void BlushSetupSystem::run() {
+    TextureManager::LoadTexture("Characters/blush.png", renderer);
+}
+
+void BlushRenderSystem::run(SDL_Renderer* renderer) {
+    const auto& affection = scene->r.ctx().get<AffectionComponent>().affection;
+    auto& playerSpriteComponent = scene->player->get<SpriteComponent>();
+
+    if (affection > 80) {
+        Texture* texture = TextureManager::GetTexture("Characters/blush.png");
+
+        const int width = texture->width;
+        const int height = 65;
+
+        SDL_Rect clip = {
+            0,
+            playerSpriteComponent.yIndex * height,
+            width,
+            height,
+        };
+        
+        texture->render(
+            0,
+            24 * SCALE,
+            width * SCALE,
+            height * SCALE,
+            &clip
+        );
+    }    
+}
+
+
 
