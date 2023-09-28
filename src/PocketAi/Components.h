@@ -1,6 +1,7 @@
 #pragma once
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL_pixels.h>
 #include <SDL_stdinc.h>
 
 #include "ECS/Components.h"
@@ -8,10 +9,15 @@
 #include "Game/Graphics/PixelShader.h"
 
 struct PlayerTextComponent {
-  std::string text;
-  TTF_Font* font;
-  short fontSize;
+  int x = 0;
+  int y = 0;
+  SDL_Color color{226, 246, 228};
+  int maxLineLength = 28;
+  int maxLines = 7;
+  TTF_Font* font = nullptr;
+  short fontSize = 8;
   SDL_Rect lastLineRect{-1, -1, -1, -1};
+  std::string text = "";
 };
 
 struct PlayerPromptComponent {

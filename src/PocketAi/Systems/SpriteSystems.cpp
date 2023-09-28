@@ -35,7 +35,7 @@ void UiUpdateSystem::run(double dT) {
     auto& uiSpriteComponent = scene->world->get<SpriteComponent>();
     const auto& affection = scene->r.ctx().get<AffectionComponent>().affection;
 
-    uiSpriteComponent.xIndex = static_cast<int>(affection / 16);
+    uiSpriteComponent.xIndex = std::clamp(static_cast<int>(affection / 16), 0, 5);
 }
 
 BackgroundSetupSystem::BackgroundSetupSystem(int day)

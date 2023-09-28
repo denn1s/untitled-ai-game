@@ -20,4 +20,6 @@ class PocketAi : public Game {
     Scene* createTitleScene();
     Scene* createContextScene(int day);
     Scene* createGameplayScene(int day);
+    Scene* createConclusionScene(bool isResponse);
+    Scene* createEndingScene();
 };

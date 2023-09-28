@@ -127,7 +127,9 @@ void AiConversationProgressSystem::run(double dT) {
     SDL_Delay(3000);
     changeScene(); // but after we fade out? 
     /* print("we must retrain using", "day" + std::to_string(day + 1) + ".txt"); */
-    AiManager::retrain("day" + std::to_string(day + 1) + ".txt");
+    if (day > 0) {
+      AiManager::retrain("day" + std::to_string(day + 1) + ".txt");
+    }
 
 /*     if (affection < 20) { */
 /*       AiManager::retrain("roll-low-" + std::to_string(day) + ".txt"); */
@@ -139,6 +141,29 @@ void AiConversationProgressSystem::run(double dT) {
   }
 }
 
+void AiConfessionRequestSetupSystem::run() {
+    AiManager::retrain("confesion.txt");
+}
+
+void AiEndingSetupSystem::run() {
+  auto view = scene->r.view<SpriteComponent>();
+  const auto affection = scene->r.ctx().get<AffectionComponent>().affection;
+
+  print("affection at ending is", affection);
+  int ending = 0;  // 0: bad end, 1: normal end, 2: good end
+  if (affection < 20) {
+    ending = 0; 
+  } else if (affection < 80) {
+    ending = 1;
+  } else {
+    ending = 2;
+  }
+
+  for(auto entity : view) {
+    auto& spriteComponent = scene->r.get<SpriteComponent>(entity);
+    spriteComponent.xIndex = ending;
+  }
+}
 
 
 

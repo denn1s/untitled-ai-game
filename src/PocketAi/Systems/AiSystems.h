@@ -34,5 +34,13 @@ private:
   int day;
 };
 
+class AiConfessionRequestSetupSystem : public SetupSystem {
+public:
+  void run();
+};
 
+class AiEndingSetupSystem : public SetupSystem {
+public:
+  void run();
+};
 

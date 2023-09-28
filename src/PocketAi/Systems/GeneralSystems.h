@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SDL2/SDL.h>
+#include <SDL_pixels.h>
 #include <SDL_render.h>
 #include <functional>
 
@@ -32,5 +33,13 @@ private:
 class AffectionSetupSystem : public SetupSystem {
 public:
   void run() override;
+};
+
+class ConversationSetupSystem : public SetupSystem {
+public:
+  ConversationSetupSystem(int maxLines);
+  void run() override;
+private:
+  int maxLines;
 };
 

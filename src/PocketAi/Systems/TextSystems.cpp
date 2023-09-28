@@ -1,5 +1,7 @@
 #include "TextSystems.h"
 
+#include <SDL_keycode.h>
+#include <SDL_pixels.h>
 #include <SDL_render.h>
 #include <SDL_timer.h>
 #include <print.h>
@@ -16,10 +18,13 @@
 #include "PocketAi/Components.h"
 #include "PocketAi/Ai/AiManager.h"
 
-void PlayerTextSetupSystem::run() {
-    short f = 5 * SCALE;
+PlayerTextSetupSystem::PlayerTextSetupSystem(int textPositionX, int textPositionY, int maxLineLength, int maxLines, SDL_Color textColor)
+    : textPositionX(textPositionX), textPositionY(textPositionY), maxLineLength(maxLineLength), maxLines(maxLines), textColor(textColor) { }
 
-    TTF_Font* font = TTF_OpenFont("assets/Fonts/GamergirlClassic.ttf", f);
+void PlayerTextSetupSystem::run() {
+    short fontSize = 5 * SCALE;
+
+    TTF_Font* font = TTF_OpenFont("assets/Fonts/GamergirlClassic.ttf", fontSize);
     if (!font) {
         print("Failed to load font: %s\n", TTF_GetError());
         exit(1);
@@ -29,9 +34,15 @@ void PlayerTextSetupSystem::run() {
         scene->player = new Entity(scene->r.create(), scene);
     }
 
-    auto& p = scene->player->get<PlayerTextComponent>();
-    p.font = font;
-    p.fontSize = f;
+    auto& p = scene->player->get<PlayerTextComponent>(
+        textPositionX,
+        textPositionY,
+        textColor,
+        maxLineLength,
+        maxLines,
+        font,
+        fontSize
+    );
 }
 
 void PlayerTextInputSystem::run(SDL_Event event) {
@@ -62,12 +73,18 @@ void PlayerTextInputSystem::run(SDL_Event event) {
                 AiManager::requestQueue.push("/neutral " + prompt);  // slight hack to make her used to answering with emotions
             }
             /* playerTextComponent.text.clear(); */
+       } else if (event.key.keysym.sym == SDLK_ESCAPE) {
+            // small hack to unstuck the systems
+            playerTextComponent.text += "\n";
+            std::string prompt = "\nSorry, can you repeat that?";
+            playerPromptComponent.isInteracting = true;  // this actually should be false, but since this is a safeguard      
+            AiManager::requestQueue.push("Rob: /confused " + prompt);  // slight hack to make her used to answering with emotions
         }
     }
 }
 
-void renderLine(SDL_Renderer* renderer, TTF_Font* font, const std::string& line, SDL_Rect& position) {
-    SDL_Surface* textSurface = TTF_RenderText_Solid(font, line.c_str(), {226, 246, 228});
+void renderLine(SDL_Renderer* renderer, TTF_Font* font, const std::string& line, SDL_Rect& position, SDL_Color color) {
+    SDL_Surface* textSurface = TTF_RenderText_Solid(font, line.c_str(), color);
     
     if(textSurface == nullptr) {
         // Handle error
@@ -90,9 +107,10 @@ void handleLine(
     TTF_Font* font,
     std::deque<std::string>& lines,
     const std::string& line,
-    SDL_Rect& position
+    SDL_Rect& position,
+    int maxLineLength,
+    int maxLines
 ) {
-    const int maxLineLength = 28;
     std::string::size_type start = 0;
 
     while (start < line.size()) {
@@ -108,7 +126,7 @@ void handleLine(
         lines.push_back(line.substr(start, end - start));
 
         // If we have more than 8 lines, remove the oldest one
-        if (lines.size() > 7) {
+        if (lines.size() > maxLines) {
             lines.pop_front();
         }
 
@@ -123,7 +141,7 @@ void PlayerTextRenderSystem::run(SDL_Renderer* renderer) {
         return;  // text has 0 length
     }
 
-    SDL_Rect position = {10 * SCALE, 100 * SCALE, 0, 0};
+    SDL_Rect position = {playerTextComponent.x * SCALE, playerTextComponent.y * SCALE, 0, 0};
 
     std::deque<std::string> lines;
 
@@ -132,7 +150,15 @@ void PlayerTextRenderSystem::run(SDL_Renderer* renderer) {
 
     while (end != std::string::npos) {
         std::string line = playerTextComponent.text.substr(start, end - start);
-        handleLine(renderer, playerTextComponent.font, lines, line, position);
+        handleLine(
+            renderer,
+            playerTextComponent.font,
+            lines,
+            line,
+            position,
+            playerTextComponent.maxLineLength,
+            playerTextComponent.maxLines
+        );
 
         start = end + 1;
         end = playerTextComponent.text.find('\n', start);
@@ -140,11 +166,19 @@ void PlayerTextRenderSystem::run(SDL_Renderer* renderer) {
 
     // Handle the last line (or only line if there are no line breaks)
     std::string line = playerTextComponent.text.substr(start);
-    handleLine(renderer, playerTextComponent.font, lines, line, position);
+    handleLine(
+        renderer,
+        playerTextComponent.font,
+        lines,
+        line,
+        position,
+        playerTextComponent.maxLineLength,
+        playerTextComponent.maxLines
+    );
 
     // Now render the lines
     for (const auto& line : lines) {
-        renderLine(renderer, playerTextComponent.font, line, position);
+        renderLine(renderer, playerTextComponent.font, line, position, playerTextComponent.color);
     }
 
     int text_width;

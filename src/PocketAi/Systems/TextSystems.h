@@ -7,12 +7,26 @@
 
 class PlayerTextInputSystem : public EventSystem {
 public:
-  void run(SDL_Event event);
+  void run(SDL_Event event) override;
 };
 
 class PlayerTextSetupSystem : public SetupSystem {
 public:
-  void run();
+  PlayerTextSetupSystem(
+    int textPositionX = 10,
+    int textPositionY = 100,
+    int maxLineLength = 28,
+    int maxLines = 7,
+    SDL_Color textColor = {226, 246, 228}
+    /* SDL_Color textColor = { 51,  44,  80} */
+  );
+  void run() override;
+private:
+  int textPositionX;
+  int textPositionY;
+  int maxLineLength;
+  int maxLines;
+  SDL_Color textColor;
 };
 
 class PlayerTextRenderSystem : public RenderSystem {

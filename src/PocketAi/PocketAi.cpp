@@ -49,7 +49,9 @@ void PocketAi::setup() {
   Scene* gameplayScene3 = createGameplayScene(3);
   Scene* contextScene4 = createContextScene(4);
   Scene* gameplayScene4 = createGameplayScene(4);
-  Scene* contextScene5 = createContextScene(5);
+  Scene* conclusionRequestScene = createConclusionScene(false);
+  Scene* conclusionResponseScene = createConclusionScene(true);
+  Scene* endingScene = createEndingScene();
 
 
   // this is the scene queue, we push the scenes in order
@@ -65,7 +67,10 @@ void PocketAi::setup() {
   scenes.push(gameplayScene3);
   scenes.push(contextScene4);
   scenes.push(gameplayScene4);
-  scenes.push(contextScene5);
+  scenes.push(conclusionRequestScene);
+  scenes.push(conclusionResponseScene);
+  scenes.push(endingScene);
+
 }
 
 Scene* PocketAi::createCreditsScene() {
@@ -198,9 +203,6 @@ Scene* PocketAi::createContextScene(int day) {
     case 4:
       context = "In an event that must have used up your luck supply for an entire year, you spot her late at night taking in the sights of the city...";
       break;
-    case 5:
-      context = "After spending time with her the last few days, you finally decide to roll the dice and straight up ask how she feels about you. Her answer is...";
-      break;
     default:
       context = "Error.";
       break;
@@ -239,13 +241,84 @@ Scene* PocketAi::createGameplayScene(int day) {
   addSetupSystem<PlayerTextSetupSystem>(scene);
   addRenderSystem<PlayerTextRenderSystem>(scene);
   addRenderSystem<PlayerCursorRenderSystem>(scene);
+  addSetupSystem<ConversationSetupSystem>(scene, 3); // TODO: move to lua
+
   addUpdateSystem<AiConversationProgressSystem>(
     scene,
     std::bind(&PocketAi::sceneTransition, this),
     day
   );
-  
+ 
+  return scene;
+}
+ 
+
+Scene* PocketAi::createConclusionScene(bool isResponse) {
+  Scene* scene = new Scene(isResponse ? "RESPONSE SCENE" : "REQUEST SCENE", r);
+  addSetupSystem<CharacterSetupSystem>(scene);
+  addSetupSystem<UiSetupSystem>(scene, renderer, "UI/conclusion.png");
+  addSetupSystem<SpriteSetupSystem>(scene, renderer);
+  addRenderSystem<SpriteRenderSystem>(scene);
+  addUpdateSystem<SlideShowUpdateSystem>(scene);
+
+  addRenderSystem<PlayerCursorRenderSystem>(scene);
+  addSetupSystem<PlayerTextSetupSystem>(
+    scene,
+    25, 94,
+    22, 7, 
+    SDL_Color{ 51, 44, 80 }
+  );
+  addRenderSystem<PlayerTextRenderSystem>(scene);
+
+  if (!isResponse) {  // this is the first conclusion slide
+    std::string context = "After spending time with her the last few days, you finally decide to ask her how she feels about you...";
+
+    addSetupSystem<AiConfessionRequestSetupSystem>(scene);
+    addUpdateSystem<TextCrawlUpdateSystem>(scene, context, 20);
+    addEventSystem<TextCrawlEventSystem>(
+      scene,
+      context,
+      std::bind(&PocketAi::sceneTransition, this)
+    );
+  } else {
+    addSetupSystem<ConversationSetupSystem>(scene, 1);
+    addUpdateSystem<AiPromptProcessingSystem>(scene);
+    addUpdateSystem<AiPromptPostProcessingSystem>(scene);
+    addUpdateSystem<AiEmotionProcessingSystem>(scene);
+    addUpdateSystem<AiConversationProgressSystem>(
+      scene,
+      std::bind(&PocketAi::sceneTransition, this),
+      0
+    );
+   }
 
   return scene;
 }
 
+
+Scene* PocketAi::createEndingScene() {
+  Scene* scene = new Scene("ENDING SCENE", r);
+  SpriteComponent sprite = {
+        "Backgrounds/ending.png",
+        160, 144,
+        0, 0,
+        30, 1000,
+        PixelShader{ nullptr, "" },
+        0,
+        true,
+        1000
+  };
+  /* addSetupSystem<AffectionSetupSystem>(scene); */
+  addSetupSystem<SlideShowSetupSystem>(scene, sprite, 1, 10000);
+  addSetupSystem<SpriteSetupSystem>(scene, renderer);
+  addSetupSystem<AiEndingSetupSystem>(scene);
+  addUpdateSystem<SlideShowUpdateSystem>(scene);
+  addRenderSystem<SpriteRenderSystem>(scene);
+
+  addUpdateSystem<SceneTransitionOnSlideUpdateSystem>(
+    scene,
+    std::bind(&PocketAi::sceneTransition, this)
+  );
+
+  return scene;
+}

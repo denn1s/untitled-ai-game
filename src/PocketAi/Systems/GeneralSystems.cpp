@@ -17,10 +17,8 @@ void CharacterSetupSystem::run() {
         scene->player = new Entity(scene->r.create(), scene);
         scene->player->addComponent<TransformComponent>(0, 24 * SCALE);  // ui offset
         scene->player->addComponent<SpriteComponent>("Characters/main.png", 160, 65, 0, 0);
-        scene->player->addComponent<PlayerTextComponent>();
         scene->player->addComponent<PlayerEmotionComponent>();
         scene->player->addComponent<PlayerPromptComponent>("Pocket: ", "Rob: ");
-        scene->player->addComponent<ConversationComponent>(5, 0, 100);
     }
 }
 
@@ -51,5 +49,12 @@ void PressStartEventSystem::run(SDL_Event event) {
 void AffectionSetupSystem::run() {
     auto& registry = scene->r;
     registry.ctx().emplace<AffectionComponent>(60);
+}
+
+ConversationSetupSystem::ConversationSetupSystem(int maxLines)
+    : maxLines(maxLines) { }
+
+void ConversationSetupSystem::run() {
+    scene->player->addComponent<ConversationComponent>(maxLines, 0, 100);
 }
 
