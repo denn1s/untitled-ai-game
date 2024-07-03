@@ -9,20 +9,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
 
-# Include the ExternalProject module
-include(ExternalProject)
-
-# Define the external project
-ExternalProject_Add(
-    llama.cpp
-    GIT_REPOSITORY https://github.com/ggerganov/llama.cpp.git
-    GIT_TAG master  # Use the master branch
-    PREFIX ${CMAKE_BINARY_DIR}/external/llama.cpp
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-    BUILD_COMMAND ${CMAKE_COMMAND} --build . --target all
-    INSTALL_COMMAND ""
-)
-
 file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS
     "${PROJECT_SOURCE_DIR}/src/*.cpp"
 )
@@ -36,23 +22,48 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC ${PROJECT_SOURCE_DIR}/src
 )
 
+# Include the ExternalProject module
+include(ExternalProject)
+
+# Define the external project
+ExternalProject_Add(
+    llama.cpp
+    PREFIX ${CMAKE_BINARY_DIR}/external/llama.cpp
+    GIT_REPOSITORY https://github.com/ggerganov/llama.cpp.git
+    GIT_TAG master
+    UPDATE_DISCONNECTED 1
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+)
+
 # Get the properties of the external project
 ExternalProject_Get_Property(llama.cpp BINARY_DIR)
 ExternalProject_Get_Property(llama.cpp SOURCE_DIR)
 set(LLAMA_CPP_LIB_DIR ${BINARY_DIR})
-set(LLAMA_CPP_ROOT_DIR ${SOURCE_DIR})
+set(LLAMA_CPP_INCLUDE_DIR ${SOURCE_DIR})
 
 # Add the include directories of the external project
-include_directories(${LLAMA_CPP_ROOT_DIR})
-include_directories(${LLAMA_CPP_ROOT_DIR}/include)
-include_directories(${LLAMA_CPP_ROOT_DIR}/common)
-include_directories(${LLAMA_CPP_ROOT_DIR}/ggml/include)
+include_directories(${LLAMA_CPP_INCLUDE_DIR})
+include_directories(${LLAMA_CPP_INCLUDE_DIR}/include)
+include_directories(${LLAMA_CPP_INCLUDE_DIR}/common)
+include_directories(${LLAMA_CPP_INCLUDE_DIR}/ggml/include)
 
-# Create a target for the external project library
-add_library(llama_cpp_lib STATIC IMPORTED)
-set_target_properties(llama_cpp_lib PROPERTIES
-    IMPORTED_LOCATION ${LLAMA_CPP_LIB_DIR}/libllama_cpp.a  # Adjust according to your actual library file
-    INTERFACE_INCLUDE_DIRECTORIES ${LLAMA_CPP_ROOT_DIR}
+# Create targets for the external project libraries
+add_library(llama_common STATIC IMPORTED)
+set_target_properties(llama_common PROPERTIES
+    IMPORTED_LOCATION ${LLAMA_CPP_LIB_DIR}/common/libcommon.a
+    INTERFACE_INCLUDE_DIRECTORIES ${LLAMA_CPP_INCLUDE_DIR}
+)
+
+add_library(llama_ggml SHARED IMPORTED)
+set_target_properties(llama_ggml PROPERTIES
+    IMPORTED_LOCATION ${LLAMA_CPP_LIB_DIR}/ggml/src/libggml.so
+    INTERFACE_INCLUDE_DIRECTORIES ${LLAMA_CPP_INCLUDE_DIR}
+)
+
+add_library(llama_core SHARED IMPORTED)
+set_target_properties(llama_core PROPERTIES
+    IMPORTED_LOCATION ${LLAMA_CPP_LIB_DIR}/src/libllama.so
+    INTERFACE_INCLUDE_DIRECTORIES ${LLAMA_CPP_INCLUDE_DIR}
 )
 
 # Add dependencies to ensure the external project is built before the parent project
@@ -75,8 +86,9 @@ target_link_libraries(${PROJECT_NAME}
   SDL2_image
   ${GLM_LIBRARIES}
   SDL2_ttf
-  common
-  llama_cpp_lib  # Updated to use the correct target name
+  llama_ggml
+  llama_common
+  llama_core
   TBB::tbb
   ${FMOD_LIBRARIES}
 )
