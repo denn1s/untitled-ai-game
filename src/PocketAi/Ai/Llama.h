@@ -28,6 +28,7 @@ private:
   llama_model* model;
   llama_context* ctx;
   llama_context* ctx_guidance;
+  struct llama_sampling_context* ctx_sampling;
   std::vector<llama_chat_msg> chat_msgs;
   std::vector<llama_token> embd_inp;
   std::vector<llama_token> embd;
@@ -58,5 +59,11 @@ private:
   bool is_interacting;
   bool add_bos;
   bool display;
+
+  void contextRotation();
+  bool evaluateTokensInBatches();
+  void addTokensToProcess();
+  void processTokens();
+  void handleEOT();
 };
 
